@@ -1,19 +1,24 @@
-﻿Public Class CoCoCo_Invoicing
-    Dim Excel As Microsoft.Office.Interop.Excel.Application
-    Dim ExWb As Microsoft.Office.Interop.Excel.Workbook
+﻿Imports Microsoft.Office.Interop
+
+Public Class CoCoCo_Invoicing
+    Dim Excel As Excel.Application
+    Dim ExWb As Excel.Workbook
+    Public Shared ReadOnly password As String = "mviw!wwGUp!zaX7A"
 
     Private Sub CoCoCo_Startup() Handles Me.Startup
-
     End Sub
 
     Private Sub CoCoCo_Shutdown() Handles Me.Shutdown
 
     End Sub
+    Protected Overrides Function CreateRibbonExtensibilityObject() As Microsoft.Office.Core.IRibbonExtensibility
+        Return New Invoicing_ribbon()
+    End Function
 
-    Shared Function CoCoCo_Calculate_OGM(ByVal dossierNr As String, ByRef Exwb As Microsoft.Office.Interop.Excel.Application)
-        Dim sht As Microsoft.Office.Interop.Excel.Worksheet
-        Dim tbl As Microsoft.Office.Interop.Excel.ListObject
-        Dim Lst As Microsoft.Office.Interop.Excel.ListRows
+    Shared Function CoCoCo_Calculate_OGM(ByVal dossierNr As String, ByRef Exwb As Excel.Application) As String
+        Dim sht As Excel.Worksheets
+        Dim tbl As Excel.ListObject
+        Dim Lst As Excel.ListRows
         Dim CountDossier As Integer
 
         On Error GoTo ErrorHandler
@@ -23,7 +28,7 @@
         sht = Exwb.Sheets("Ereloon Nota")
         tbl = sht.ListObjects("Ereloon_Nota_Table")
         Lst = tbl.ListRows
-        sht.Unprotect(Password:="mviw!wwGUp!zaX7A")
+        sht.Unprotect(Password:=password)
 
         REM remove the autofilter is necessairy
         tbl.AutoFilter.ShowAllData()
@@ -32,12 +37,12 @@
 
         CountDossier = sht.Evaluate("=Ereloon_Nota_Table[[#Totals],[dossiernr]]")
         tbl.AutoFilter.ShowAllData()
-        sht.Protect(Password:="mviw!wwGUp!zaX7A", AllowSorting:=True, AllowFiltering:=True)
+        sht.Protect(Password:=password, AllowSorting:=True, AllowFiltering:=True)
 
         sht = Exwb.Sheets("Provisies")
         tbl = sht.ListObjects("Provisie_Table")
         Lst = tbl.ListRows
-        sht.Unprotect(Password:="mviw!wwGUp!zaX7A")
+        sht.Unprotect(Password:=password)
 
         REM remove the autofilter is necessairy
         tbl.AutoFilter.ShowAllData()
@@ -45,7 +50,7 @@
         tbl.AutoFilter.ApplyFilter()
         CountDossier = CountDossier + sht.Evaluate("=Provisie_Table[[#Totals],[dossiernr]]")
         tbl.AutoFilter.ShowAllData()
-        sht.Protect(Password:="mviw!wwGUp!zaX7A", AllowSorting:=True, AllowFiltering:=True)
+        sht.Protect(Password:=password, AllowSorting:=True, AllowFiltering:=True)
 
         Dim Serial_Number As Integer
         Dim List As String()
@@ -65,4 +70,5 @@
 ErrorHandler:
         Return "+++//+++"
     End Function
+
 End Class

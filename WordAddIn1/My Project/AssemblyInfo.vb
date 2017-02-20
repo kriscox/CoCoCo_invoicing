@@ -14,12 +14,12 @@ Imports System.Security
 <Assembly: AssemblyCompany("CoCoCo bvba")>
 <Assembly: AssemblyProduct("CoCoCo_Invoicing")>
 <Assembly: AssemblyCopyright("Copyright ©  2017")> 
-<Assembly: AssemblyTrademark("")> 
+<Assembly: AssemblyTrademark("")>
 
 ' Setting ComVisible to false makes the types in this assembly not visible 
 ' to COM components.  If you need to access a type in this assembly from 
 ' COM, set the ComVisible attribute to true on that type.
-<Assembly: ComVisible(False)>
+<Assembly: ComVisible(True)>
 
 'The following GUID is for the ID of the typelib if this project is exposed to COM
 <Assembly: Guid("00434612-382b-4221-85a3-9280520ce2f2")> 

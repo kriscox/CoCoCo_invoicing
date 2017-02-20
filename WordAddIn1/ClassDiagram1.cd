@@ -1,0 +1,84 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<ClassDiagram MajorVersion="1" MinorVersion="1">
+  <Class Name="WordAddIn1.CoCoCo_Invoicing" Collapsed="true">
+    <Position X="0.5" Y="0.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>QAIAAAAQABAAEQAgAQEAgFgAAgAAABgQQAgAJAAEACg=</HashCode>
+      <FileName>CoCoCo_invoicing_addin.vb</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="WordAddIn1.Globals" Collapsed="true">
+    <Position X="2.25" Y="1.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>EAgAAAAAAAAAAAAAIAAAAAAgAAAAAABAAAACAAAAAAA=</HashCode>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="WordAddIn1.ThisRibbonCollection" Collapsed="true">
+    <Position X="4" Y="2.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="WordAddIn1.Erelonen" Collapsed="true">
+    <Position X="2.25" Y="0.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAATAABhAAQAKAACEAIQQAQAAAoABAyIECgBAgABCBQ=</HashCode>
+      <FileName>Erelonen.vb</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="WordAddIn1.Erelonen_provisie_form" Collapsed="true">
+    <Position X="4" Y="0.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAACAAAECAAGAAQQIKBAAACAAAQYBAAAIBACAgAAAA=</HashCode>
+      <FileName>Erelonen_provisie_form.vb</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="WordAddIn1.Ereloon_Nota_form" Collapsed="true">
+    <Position X="0.5" Y="1.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAiQSAAlDAAIAC2AQKhQACCADL/AJAgQICAAQAAAAA=</HashCode>
+      <FileName>Ereloon_Nota_form.vb</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="WordAddIn1.Invoicing_ribbon" Collapsed="true" BaseTypeListCollapsed="true">
+    <Position X="4" Y="1.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAABAAAAAAAAAAQAAAAAAAAAAAAAABAAAAAgAIAAAA=</HashCode>
+      <FileName>Invoicing_ribbon.vb</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" Collapsed="true" />
+  </Class>
+  <Class Name="WordAddIn1.MySettings" Collapsed="true">
+    <Position X="0.5" Y="2.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAEAAAAAAAABAAAAAAAAAAAAAAA=</HashCode>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="WordAddIn1.Provisie" Collapsed="true">
+    <Position X="2.25" Y="2.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>EACAAABBAAQAIAACAAIQAAQAAAgQAIiIEggBAgAAAAQ=</HashCode>
+      <FileName>Provision.vb</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Module Name="WordAddIn1.DesignTimeConstants" Collapsed="true">
+    <Position X="0.5" Y="3.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAABAAAAAAAAAAAAAAAAAAAABAAAAAEAAAAAAAAAA=</HashCode>
+      <FileName>My Project\AssemblyInfo.vb</FileName>
+    </TypeIdentifier>
+  </Module>
+  <Module Name="WordAddIn1.My.Resources.Resources" Collapsed="true">
+    <Position X="4" Y="3.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAIAAAAAAAAAAAAABEAAAAQAAAAAAAAAAAAAAAIA=</HashCode>
+    </TypeIdentifier>
+  </Module>
+  <Module Name="WordAddIn1.My.MySettingsProperty" Collapsed="true">
+    <Position X="2.25" Y="3.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAgAAAAAAAAAA=</HashCode>
+    </TypeIdentifier>
+  </Module>
+  <Font Name="Segoe UI" Size="9" />
+</ClassDiagram>

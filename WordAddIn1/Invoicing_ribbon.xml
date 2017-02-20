@@ -1,0 +1,16 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<customUI xmlns="http://schemas.microsoft.com/office/2009/07/customui" onLoad="Ribbon_Load">
+  <ribbon>
+    <tabs>
+      <tab idMso="TabAddIns" label="Invoicing">
+        <group id="CoCoCo_invoicing"
+               label="CoCoCo invoicing">
+          <button id="Provisie_nota" label="Provisie Nota" onAction="Provisie_nota_button"/>
+          <button id="Ëreloon_nota" label="Ereloon Nota" onAction="Ereloon_nota_button"/>
+          <button id="Overzicht" label="Betalings overzicht" onAction="Overzicht_button"/>
+        </group>
+      </tab>
+    </tabs>
+  </ribbon>
+</customUI>
+

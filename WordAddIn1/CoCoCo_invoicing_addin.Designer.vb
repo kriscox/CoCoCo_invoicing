@@ -167,10 +167,6 @@ Partial Public NotInheritable Class CoCoCo_Invoicing
         Me.CustomTaskPanes.Dispose
         MyBase.OnShutdown
     End Sub
-
-    Protected Overrides Sub Finalize()
-        MyBase.Finalize()
-    End Sub
 End Class
 
 '''

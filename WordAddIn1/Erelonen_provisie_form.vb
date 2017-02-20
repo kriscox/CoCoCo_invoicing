@@ -1,42 +1,47 @@
-﻿Public Class Erelonen_provisie_form
-    Private Sub Erelonen_provisie_form_Load(sender As Object, e As EventArgs) Handles MyBase.Load
-        Calculate_Texts()
+﻿Imports System.Globalization
+Imports System.Windows
+
+Public Class Erelonen_provisie_form
+    Dim culture As CultureInfo = CultureInfo.CurrentCulture
+
+    Public Sub New()
+
+        ' This call is required by the designer.
+        InitializeComponent()
+
+        ' Be sure all textboxes have the right currency formatting
+        ValidateChildren()
+
     End Sub
 
-    Private Sub TextBox_Leave(sender As Object, e As EventArgs) Handles Gerecht_input.Leave, Erelonen_input.Leave
-        Dim Calculate As Boolean = True
-        If 0 <> Erelonen_input.TextLength Then
-            If Not IsNumeric(Erelonen_input.Text) Then
-                MsgBox("Please only enter numbers")
-                Erelonen_input.Focus()
-                Calculate = False
-            Else
-                Erelonen_input.Text = Format(CDbl(Erelonen_input.Text), "€ 0.00")
-            End If
+    Private Sub Field_Validate(sender As Object, e As ComponentModel.CancelEventArgs) Handles Gerecht_input.Validating, Erelonen_input.Validating
+        Dim Quantity As Double = Nothing
+        Dim field As Forms.TextBox = CType(sender, Forms.TextBox)
+
+        If (0 = field.Text.Length) Then
+            field.Text = 0
         End If
 
-        If 0 <> Gerecht_input.TextLength Then
-            If Not IsNumeric(Gerecht_input.Text) Then
-                MsgBox("Please only enter numbers")
-                Gerecht_input.Focus()
-                Calculate = False
-            Else
-                Gerecht_input.Text = Format(CDbl(Gerecht_input.Text), "€ 0.00")
-            End If
+        If (Double.TryParse(field.Text, NumberStyles.Currency, culture, Quantity)) Then
+            field.Text = FormatCurrency(Quantity)
+        Else
+            MsgBox("Waarde moet een getal zijn")
+            e.Cancel = True
         End If
-        Calculate_Texts()
+
     End Sub
 
-    Private Sub Calculate_Texts()
-        If IsNumeric(Erelonen_input.Text) Then
-            Erelonen_btw.Text = Format(CDbl(Erelonen_input.Text) * 0.21, "€ 0.00")
-            Erelonen_totaal.Text = Format(CDbl(Erelonen_input.Text) + CDbl(Erelonen_btw.Text), "€ 0.00")
-            If IsNumeric(Gerecht_input.Text) Then
-                Totaal_ex_btw.Text = Format(CDbl(Erelonen_input.Text) + CDbl(Gerecht_input.Text), "€ 0.00")
-            End If
-            Totaal_btw.Text = Format(CDbl(Erelonen_btw.Text), "€ 0.00")
-            Totaal_inc_btw.Text = Format(CDbl(Erelonen_totaal.Text) + CDbl(Gerecht_totaal.Text), "€ 0.00")
+
+
+    Private Sub Field_Validated(sender As Object, e As EventArgs) Handles Gerecht_input.Validated, Erelonen_input.Validated
+        Erelonen_btw.Text = FormatCurrency(CDbl(Erelonen_input.Text) * 0.21)
+        Erelonen_totaal.Text = FormatCurrency(CDbl(Erelonen_input.Text) + CDbl(Erelonen_btw.Text))
+        Gerecht_totaal.Text = FormatCurrency(CDbl(Gerecht_input.Text))
+        If IsNumeric(Gerecht_input.Text) Then
+            Totaal_ex_btw.Text = FormatCurrency(CDbl(Erelonen_input.Text) + CDbl(Gerecht_input.Text))
         End If
+        Totaal_btw.Text = FormatCurrency(CDbl(Erelonen_btw.Text))
+        Totaal_inc_btw.Text = FormatCurrency(CDbl(Erelonen_totaal.Text) + CDbl(Gerecht_totaal.Text))
     End Sub
 
     Private Sub Button1_Click(sender As Object, e As EventArgs) Handles Button_OK.Click
@@ -54,4 +59,5 @@ Fault:
     Private Sub Button2_Click(sender As Object, e As EventArgs) Handles Button_Cancel.Click
         Throw New NotImplementedException()
     End Sub
+
 End Class

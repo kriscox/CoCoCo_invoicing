@@ -59,6 +59,7 @@ Partial Class Erelonen_provisie_form
         Me.Erelonen_input.Name = "Erelonen_input"
         Me.Erelonen_input.Size = New System.Drawing.Size(100, 19)
         Me.Erelonen_input.TabIndex = 1
+        Me.Erelonen_input.Text = "0"
         Me.Erelonen_input.TextAlign = System.Windows.Forms.HorizontalAlignment.Right
         '
         'Erelonen_btw
@@ -102,6 +103,7 @@ Partial Class Erelonen_provisie_form
         Me.Gerecht_input.Name = "Gerecht_input"
         Me.Gerecht_input.Size = New System.Drawing.Size(100, 19)
         Me.Gerecht_input.TabIndex = 2
+        Me.Gerecht_input.Text = "0"
         Me.Gerecht_input.TextAlign = System.Windows.Forms.HorizontalAlignment.Right
         '
         'Gerecht_totaal
@@ -160,6 +162,7 @@ Partial Class Erelonen_provisie_form
         '
         'Button_OK
         '
+        Me.Button_OK.FlatStyle = System.Windows.Forms.FlatStyle.System
         Me.Button_OK.Font = New System.Drawing.Font("Trebuchet MS", 12.0!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
         Me.Button_OK.Location = New System.Drawing.Point(456, 140)
         Me.Button_OK.Name = "Button_OK"
@@ -170,6 +173,7 @@ Partial Class Erelonen_provisie_form
         '
         'Button_Cancel
         '
+        Me.Button_Cancel.FlatStyle = System.Windows.Forms.FlatStyle.System
         Me.Button_Cancel.Font = New System.Drawing.Font("Trebuchet MS", 12.0!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
         Me.Button_Cancel.Location = New System.Drawing.Point(586, 140)
         Me.Button_Cancel.Name = "Button_Cancel"
@@ -234,6 +238,8 @@ Partial Class Erelonen_provisie_form
         Me.Controls.Add(Me.Label4)
         Me.Controls.Add(Me.Label1)
         Me.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedDialog
+        Me.MaximizeBox = False
+        Me.MinimizeBox = False
         Me.Name = "Erelonen_provisie_form"
         Me.RightToLeft = System.Windows.Forms.RightToLeft.No
         Me.RightToLeftLayout = True
