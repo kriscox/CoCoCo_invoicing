@@ -50,6 +50,16 @@ Public Class Invoicing_ribbon
     End Sub
 #End Region
 
+    Public Sub Show_Provision_Form_Button(ByVal control As Office.IRibbonControl)
+        Dim form As Erelonen_provisie_form = New Erelonen_provisie_form
+        form.Show()
+    End Sub
+
+    Public Sub Show_Erelonen_Form_Button(ByVal control As Office.IRibbonControl)
+        Dim erelonen_form As Ereloon_Nota_form = New Ereloon_Nota_form
+        erelonen_form.Show()
+    End Sub
+
 #Region "Helpers"
 
     Private Shared Function GetResourceText(ByVal resourceName As String) As String

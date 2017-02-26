@@ -9,6 +9,10 @@
           <button id="Ëreloon_nota" label="Ereloon Nota" onAction="Ereloon_nota_button"/>
           <button id="Overzicht" label="Betalings overzicht" onAction="Overzicht_button"/>
         </group>
+        <group id="ShowForms" label="Show Forms">
+          <button id="Provisie_nota_form" label="Provisie Nota" onAction="Show_Provision_Form_Button"/>
+          <button id="Ëreloon_nota_form" label="Ereloon Nota" onAction="Show_Erelonen_Form_Button"/>
+        </group>
       </tab>
     </tabs>
   </ribbon>

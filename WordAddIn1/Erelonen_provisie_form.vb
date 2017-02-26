@@ -15,11 +15,17 @@ Public Class Erelonen_provisie_form
     End Sub
 
     Private Sub Field_Validate(sender As Object, e As ComponentModel.CancelEventArgs) Handles Gerecht_input.Validating, Erelonen_input.Validating
+        Dim faultSeparator As String
+        Dim decimalSeparator As String = Globalization.CultureInfo.CurrentCulture.NumberFormat.NumberDecimalSeparator
         Dim Quantity As Double = Nothing
         Dim field As Forms.TextBox = CType(sender, Forms.TextBox)
 
+        If decimalSeparator = "." Then faultSeparator = "," Else faultSeparator = "."
+
         If (0 = field.Text.Length) Then
             field.Text = 0
+        ElseIf (field.Text.Contains(".") Xor field.Text.contains(",")) Then
+            field.Text = field.Text.Replace(faultSeparator, decimalSeparator)
         End If
 
         If (Double.TryParse(field.Text, NumberStyles.Currency, culture, Quantity)) Then
@@ -34,6 +40,7 @@ Public Class Erelonen_provisie_form
 
 
     Private Sub Field_Validated(sender As Object, e As EventArgs) Handles Gerecht_input.Validated, Erelonen_input.Validated
+
         Erelonen_btw.Text = FormatCurrency(CDbl(Erelonen_input.Text) * 0.21)
         Erelonen_totaal.Text = FormatCurrency(CDbl(Erelonen_input.Text) + CDbl(Erelonen_btw.Text))
         Gerecht_totaal.Text = FormatCurrency(CDbl(Gerecht_input.Text))
