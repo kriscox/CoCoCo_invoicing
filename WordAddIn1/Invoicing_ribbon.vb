@@ -60,6 +60,11 @@ Public Class Invoicing_ribbon
         erelonen_form.Show()
     End Sub
 
+    Public Sub Invoicing_Button(ByVal control As Office.IRibbonControl)
+        Dim Invoicing As Invoicing = New Invoicing
+        Invoicing.startup()
+    End Sub
+
 #Region "Helpers"
 
     Private Shared Function GetResourceText(ByVal resourceName As String) As String

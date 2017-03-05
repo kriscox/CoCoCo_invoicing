@@ -229,6 +229,13 @@
     <Compile Include="Ereloon_Nota_form.vb">
       <SubType>Form</SubType>
     </Compile>
+    <Compile Include="GlobalValues.vb" />
+    <Compile Include="InputInvoice_Form.Designer.vb">
+      <DependentUpon>InputInvoice_Form.vb</DependentUpon>
+    </Compile>
+    <Compile Include="InputInvoice_Form.vb">
+      <SubType>Form</SubType>
+    </Compile>
     <Compile Include="InvoiceData.vb" />
     <Compile Include="Invoicing.vb" />
     <Compile Include="Invoicing_ribbon.vb" />
@@ -237,6 +244,12 @@
       <DependentUpon>ListForm.vb</DependentUpon>
     </Compile>
     <Compile Include="ListForm.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Payment.Designer.vb">
+      <DependentUpon>Payment.vb</DependentUpon>
+    </Compile>
+    <Compile Include="Payment.vb">
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="PaymentOverview.vb" />
@@ -250,6 +263,9 @@
     <EmbeddedResource Include="Ereloon_Nota_form.resx">
       <DependentUpon>Ereloon_Nota_form.vb</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="Payment.resx">
+      <DependentUpon>Payment.vb</DependentUpon>
+    </EmbeddedResource>
     <None Include="ClassDiagram1.cd" />
     <None Include="CoCoCo_invoicing_addin.Designer.xml">
       <DependentUpon>CoCoCo_invoicing_addin.vb</DependentUpon>
@@ -258,6 +274,9 @@
       <DependentUpon>CoCoCo_invoicing_addin.Designer.xml</DependentUpon>
     </Compile>
     <Compile Include="My Project\AssemblyInfo.vb" />
+    <EmbeddedResource Include="InputInvoice_Form.resx">
+      <DependentUpon>InputInvoice_Form.vb</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="ListForm.resx">
       <DependentUpon>ListForm.vb</DependentUpon>
     </EmbeddedResource>

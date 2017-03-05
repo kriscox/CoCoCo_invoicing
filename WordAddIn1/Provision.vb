@@ -140,7 +140,7 @@ ErrorHandler:
         Dim CountDossier As Double
 
         On Error GoTo ErrorHandler
-        OGMCode = CoCoCo_Invoicing.CoCoCo_Calculate_OGM(dossierNr, ExWb)
+        OGMCode = GlobalValues.CoCoCo_Calculate_OGM(dossierNr)
 
         sht = ExWb.Sheets("Provisies")
         sht.Unprotect(Password:="mviw!wwGUp!zaX7A")

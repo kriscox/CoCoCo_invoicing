@@ -4,38 +4,16 @@ Imports Microsoft.Office.Interop
 Imports System.Windows.Forms
 
 Public Class PaymentOverview
+    Implements IDisposable
 
     REM version 20160830
-    Dim ObjExcel As Excel.Application
-    Dim ExWb As Excel.Workbook
+    Dim ObjExcel As Excel.Application = GlobalValues.GetExcel()
+    Dim ExWb As Excel.Workbook = GlobalValues.GetWorkbook()
     Dim colRecords As Collection
     Dim arrData(,), ExcelFileName As String
     Dim Input_Form As New ListForm
     Dim ListInvoices As Excel.Range
     Private Const ColumnCount = 7
-
-    Private Function OpenExcel() As Boolean
-
-        ObjExcel = CreateObject("Excel.Application")
-        REM ExcelFileName = "i:\advogenk\klantenboek.xlsx"
-        ExcelFileName = "C:\Users\krisc\OneDrive\Documents\01. CoCoCo\ImagoInvest\klantenboek.xlsx"
-
-        On Error GoTo ErrorHandler
-
-        ExWb = ObjExcel.Workbooks.Open(Filename:=ExcelFileName)
-
-        If True = ExWb.ReadOnly Then
-            ExWb.Close()
-            OpenExcel = False
-        Else
-            OpenExcel = True
-        End If
-
-        Exit Function
-
-ErrorHandler:
-        OpenExcel = False
-    End Function
 
     Private Sub QuickSort(vArray As Object, inLow As Long, inHi As Long)
 
@@ -77,7 +55,7 @@ ErrorHandler:
 
     Private Sub RemoveDups(vArray() As String)
         Dim newArray() As String
-        Dim i, j, Length As Integer
+        Dim i, Length As Integer
 
         Length = 0
         ReDim newArray(UBound(vArray))
@@ -112,7 +90,7 @@ ErrorHandler:
         sht = ExWb.Sheets("Ereloon Nota")
         tbl = sht.ListObjects("Ereloon_Nota_Table")
         Lst = tbl.ListRows
-        sht.Unprotect(Password:=CoCoCo_Invoicing.password)
+        sht.Unprotect(Password:=GlobalValues.password)
 
         REM remove the autofilter is necessairy
         tbl.AutoFilter.ShowAllData()
@@ -130,12 +108,12 @@ ErrorHandler:
         Next N
 
         tbl.AutoFilter.ShowAllData()
-        sht.Protect(Password:=CoCoCo_Invoicing.password, AllowSorting:=True, AllowFiltering:=True)
+        sht.Protect(Password:=GlobalValues.password, AllowSorting:=True, AllowFiltering:=True)
 
         sht = ExWb.Sheets("Provisies")
         tbl = sht.ListObjects("Provisie_Table")
         Lst = tbl.ListRows
-        sht.Unprotect(Password:=CoCoCo_Invoicing.password)
+        sht.Unprotect(Password:=GlobalValues.password)
 
         REM remove the autofilter is necessairy
         tbl.AutoFilter.ShowAllData()
@@ -153,7 +131,7 @@ ErrorHandler:
         Next N
 
         tbl.AutoFilter.ShowAllData()
-        sht.Protect(Password:=CoCoCo_Invoicing.password, AllowSorting:=True, AllowFiltering:=True)
+        sht.Protect(Password:=GlobalValues.password, AllowSorting:=True, AllowFiltering:=True)
 
         Call QuickSort(tmpArray, 0, UBound(tmpArray))
 
@@ -192,7 +170,7 @@ ErrorHandler:
 
 ErrorHandler:
         Get_Unpayed_Invoices = False
-        sht.Protect(Password:=CoCoCo_Invoicing.password, AllowSorting:=True, AllowFiltering:=True)
+        sht.Protect(Password:=GlobalValues.password, AllowSorting:=True, AllowFiltering:=True)
 
     End Function
 
@@ -238,45 +216,21 @@ ErrorHandler:
             .CheckBoxes = True
         End With
 
-        Input_Form.Show
+        Input_Form.Show()
 
         Show_ListForm = True
         Exit Function
 
 ErrorHandler:
         Show_ListForm = False
-        Input_Form.Hide
-    End Function
-
-
-    Private Function CloseExcel(Optional Write_On_Save As Boolean = True) As Boolean
-
-        On Error GoTo ErrorHandler
-        ' Close Excel bits
-        ExWb.Save()
-        ExWb.Close(SaveChanges:=Write_On_Save)
-        ExWb = Nothing
-
-        CloseExcel = True
-
-        Exit Function
-
-ErrorHandler:
-        On Error Resume Next
-        CloseExcel = False
-        ExWb.Close(SaveChanges:=Write_On_Save)
-        ExWb.Quit
-
+        Input_Form.Hide()
     End Function
 
 
     Public Function main() As Boolean
         Dim error_text As String
 
-        If Not OpenExcel() Then
-            error_text = "Error opening Excel"
-            GoTo Exit_error
-        ElseIf Not Get_Unpayed_Invoices() Then
+        If Not Get_Unpayed_Invoices() Then
             error_text = "Error getting invoices"
             GoTo Exit_error
         ElseIf Not Show_ListForm() Then
@@ -284,15 +238,44 @@ ErrorHandler:
             GoTo Exit_error
         End If
 
-        CloseExcel()
         main = True
         Exit Function
 
 Exit_error:
         MsgBox(error_text)
-        CloseExcel()
         main = False
 
     End Function
 
+#Region "IDisposable Support"
+    Private disposedValue As Boolean ' To detect redundant calls
+
+    ' IDisposable
+    Protected Overridable Sub Dispose(disposing As Boolean)
+        If Not disposedValue Then
+            If disposing Then
+                Input_Form.Dispose()
+            End If
+
+            ' TODO: free unmanaged resources (unmanaged objects) and override Finalize() below.
+            ' TODO: set large fields to null.
+        End If
+        disposedValue = True
+    End Sub
+
+    ' TODO: override Finalize() only if Dispose(disposing As Boolean) above has code to free unmanaged resources.
+    'Protected Overrides Sub Finalize()
+    '    ' Do not change this code.  Put cleanup code in Dispose(disposing As Boolean) above.
+    '    Dispose(False)
+    '    MyBase.Finalize()
+    'End Sub
+
+    ' This code added by Visual Basic to correctly implement the disposable pattern.
+    Public Sub Dispose() Implements IDisposable.Dispose
+        ' Do not change this code.  Put cleanup code in Dispose(disposing As Boolean) above.
+        Dispose(True)
+        ' TODO: uncomment the following line if Finalize() is overridden above.
+        ' GC.SuppressFinalize(Me)
+    End Sub
+#End Region
 End Class

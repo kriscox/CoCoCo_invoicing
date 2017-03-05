@@ -13,6 +13,9 @@
           <button id="Provisie_nota_form" label="Provisie Nota" onAction="Show_Provision_Form_Button"/>
           <button id="Ëreloon_nota_form" label="Ereloon Nota" onAction="Show_Erelonen_Form_Button"/>
         </group>
+        <group id="Invoicing_group" label="Invoicing">
+          <button id="Invoicing_button" label="Invoicing" onAction="Invoicing_Button"/>
+        </group>
       </tab>
     </tabs>
   </ribbon>

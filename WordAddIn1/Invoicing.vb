@@ -3,17 +3,15 @@ Imports Microsoft.Office.Interop.Excel
 Imports Microsoft.Office.Interop
 
 Public Class Invoicing
-    ' currency format
-    Private Const NumberFormat = "€ ## ##0.00;[RED]€ -## ##0.00;-"
-    'Path to invoice template
-    Private Const invoiceTemplate = "i:\Advogenk\Factuur.dotx"
-    Private Const Excel = "i:\advogenk\klantenboek.xlsx"
+    Implements IDisposable
 
+    Private globalvalues As GlobalValues = GlobalValues.GetInstance()
     Private ogm_Record As Excel.Range
     Private excel_Window As Excel.Window
-    Private Workbook As Workbook
-    Private ObjExcel As Excel.Application
+    Private Workbook As Workbook = GlobalValues.GetWorkbook()
+    Private ObjExcel As Excel.Application = GlobalValues.GetExcel()
     Dim dossierNr As String
+    Dim inputInvoice As InputInvoice_Form
     Dim ereloonFct, gerechtskostenFct As Double
     Dim kostenSchema As Kostenschema
     Dim erelonen, Provisies As String
@@ -22,12 +20,23 @@ Public Class Invoicing
     Dim Total As Double
     Dim subtotal_Provisions, Prov_Erelonen, Prov_BTW, Prov_Gerecht As Double
 
+    Public Property Workbook1 As Workbook
+        Get
+            Return Workbook
+        End Get
+        Set(value As Workbook)
+            Workbook = value
+        End Set
+    End Property
+
     Public Sub startup()
+        inputInvoice = New InputInvoice_Form()
         While True
-            inputInvoice.OGMcode1 = ""
-            inputInvoice.OGMcode2 = ""
-            inputInvoice.OGMCode3 = ""
-            inputInvoice.Show
+            inputInvoice.OGMcode1.Text = ""
+            inputInvoice.OGMcode2.Text = ""
+            inputInvoice.OGMcode3.Text = ""
+            inputInvoice.ShowDialog()
+
             Select Case inputInvoice.Tag
 
             REM Go to the excel
@@ -36,10 +45,8 @@ Public Class Invoicing
             REM loop to log a OGM code payment
                 Case Is = "OGM_OK"
                     Dim ogm As String
-                    ogm = "+++" & inputInvoice.OGMcode1 & "/" & inputInvoice.OGMcode2 & "/" & inputInvoice.OGMCode3 & "+++"
-                    Open_excel()
+                    ogm = "+++" & inputInvoice.OGMcode1.Text & "/" & inputInvoice.OGMcode2.Text & "/" & inputInvoice.OGMcode3.Text & "+++"
                     OGM_Payment(ogm)
-                    Close_excel()
 
             REM Exit loop
                 Case Is = "OGM_EXIT"
@@ -71,25 +78,25 @@ Public Class Invoicing
 
         REM read total Saldo
         If ereloon Then
-            Saldo = Math.Round(ogm_Record.Cells(29) + 0.000001, 2)
+            Saldo = Math.Round(ogm_Record.Cells(29).Value2 + 0.000001, 2)
         Else
-            Saldo = Math.Round(ogm_Record.Cells(12) + 0.000001, 2)
+            Saldo = Math.Round(ogm_Record.Cells(12).Value2 + 0.000001, 2)
         End If
-        Dossier = ogm_Record.Cells(3)
+        Dossier = ogm_Record.Cells(3).Value2
 
         REM *****
         REM request amount payed
         REM *****
         Payment = New Payment
-        Payment.ogm_label.Caption = ogm
-        Payment.Dossier_label.Caption = ogm_Record.Cells()
-        Payment.Show
+        Payment.ogm_label.Text = ogm
+        Payment.Dossier_label.Text = ogm_Record.Cells(3).Value2
+        Payment.ShowDialog()
 
         If Payment.Tag <> "OK" Then
             Exit Sub
         End If
 
-        Amount = CDbl(Payment.Payment_amount.Value)
+        Amount = CDbl(Payment.Payment_amount.Text)
 
         Factuurnummer = NextInvoiceNumber()
 
@@ -98,7 +105,7 @@ Public Class Invoicing
         REM *****
         If ereloon Then
             REM read DossierNr
-            dossierNr = ogm_Record.Cells(3).Value
+            dossierNr = ogm_Record.Cells(3).Value2
             REM Saldo = Saldo - everything already provisioned
             Saldo = Saldo - getSaldo()
             If Saldo <= Amount Then
@@ -110,13 +117,13 @@ Public Class Invoicing
                 End If
 
                 REM Close erelonen entry
-                Workbook.Sheets("Ereloon Nota").Unprotect(Password:=CoCoCo_Invoicing.password)
-                ogm_Record.Cells(32) = True
-                ogm_Record.Cells(33) = Now
-                ogm_Record.Cells(34) = Factuurnummer
-                Workbook.Sheets("Ereloon Nota").Protect(Password:=CoCoCo_Invoicing.password, AllowSorting:=True, AllowFiltering:=True)
+                Workbook1.Sheets("Ereloon Nota").Unprotect(Password:=GlobalValues.password)
+                ogm_Record.Cells(32).Value2 = True
+                ogm_Record.Cells(33).Value2 = Now
+                ogm_Record.Cells(34).Value2 = Factuurnummer
+                Workbook1.Sheets("Ereloon Nota").Protect(Password:=GlobalValues.password, AllowSorting:=True, AllowFiltering:=True)
                 'TODO readkostenschem
-                'readKostenSchema kostenschemaID:=ogm_Record.Cells(9)
+                'kostenschema.readKostenSchema(kostenschemaID:=ogm_Record.Cells(9))
                 erelonen = erelonen & " " & ogm_Record.Row
                 Fee_invoice()
                 Close_provisions()
@@ -132,18 +139,18 @@ Public Class Invoicing
             UpdateRecord()
         Else
             REM remove payed part
-            Saldo = Saldo - CDbl(ogm_Record.Cells(15)) - CDbl(ogm_Record.Cells(16)) - CDbl(ogm_Record.Cells(17))
+            Saldo = Saldo - CDbl(ogm_Record.Cells(15).Value2) - CDbl(ogm_Record.Cells(16).Value2) - CDbl(ogm_Record.Cells(17).Value2)
 
             REM everything payed close provisie
             If Saldo <= Amount Then
-                Workbook.Sheets("Provisies").Unprotect(Password:=CoCoCo_Invoicing.password)
-                ereloonFct = ogm_Record.Cells(9) - ogm_Record.Cells(15)
-                gerechtskostenFct = ogm_Record.Cells(11) - ogm_Record.Cells(17)
-                ogm_Record.Cells(13) = True
-                ogm_Record.Cells(15) = ogm_Record.Cells(9)
-                ogm_Record.Cells(16) = ogm_Record.Cells(10)
-                ogm_Record.Cells(17) = ogm_Record.Cells(11)
-                Workbook.Sheets("Provisies").Protect(Password:=CoCoCo_Invoicing.password, AllowSorting:=True, AllowFiltering:=True)
+                Workbook1.Sheets("Provisies").Unprotect(Password:=GlobalValues.password)
+                ereloonFct = ogm_Record.Cells(9).Value2 - ogm_Record.Cells(15).Value2
+                gerechtskostenFct = ogm_Record.Cells(11).Value2 - ogm_Record.Cells(17).Value2
+                ogm_Record.Cells(13).Value2 = True
+                ogm_Record.Cells(15).Value2 = ogm_Record.Cells(9).Value2
+                ogm_Record.Cells(16).Value2 = ogm_Record.Cells(10).Value2
+                ogm_Record.Cells(17).Value2 = ogm_Record.Cells(11).Value2
+                Workbook1.Sheets("Provisies").Protect(Password:=GlobalValues.password, AllowSorting:=True, AllowFiltering:=True)
                 Provisies = "PE" & ogm_Record.Row
                 'Fill rest on other open provisies
                 rest = Amount - Saldo
@@ -152,24 +159,24 @@ Public Class Invoicing
                 End If
 
             ElseIf Saldo > Amount Then
-                ogm_Record.Cells(1, 13) = False
+                ogm_Record.Cells(1, 13).text = False
                 REM calculate remainder of costs
-                rest_costs = ogm_Record.Cells(1, 11) - ogm_Record.Cells(1, 17)
+                rest_costs = ogm_Record.Cells(1, 11).text - ogm_Record.Cells(1, 17).text
                 If Amount > rest_costs Then
-                    Workbook.Sheets("Provisies").Unprotect(Password:=CoCoCo_Invoicing.password)
-                    ogm_Record.Cells(1, 17) = ogm_Record.Cells(1, 11)
+                    Workbook1.Sheets("Provisies").Unprotect(Password:=GlobalValues.password)
+                    ogm_Record.Cells(1, 17).text = ogm_Record.Cells(1, 11).text
                     gerechtskostenFct = rest_costs
                     Amount = Amount - rest_costs
                     REM devide the rest over wages and BTW
                     wages = Math.Round(Amount / 1.21, 2)
-                    ogm_Record.Cells(1, 15) = ogm_Record.Cells(1, 15) + wages
-                    ogm_Record.Cells(1, 16) = ogm_Record.Cells(1, 16) + Amount - wages
-                    Workbook.Sheets("Provisies").Protect(Password:=CoCoCo_Invoicing.password, AllowSorting:=True, AllowFiltering:=True)
+                    ogm_Record.Cells(1, 15).text = ogm_Record.Cells(1, 15).text + wages
+                    ogm_Record.Cells(1, 16).text = ogm_Record.Cells(1, 16).text + Amount - wages
+                    Workbook1.Sheets("Provisies").Protect(Password:=GlobalValues.password, AllowSorting:=True, AllowFiltering:=True)
                     ereloonFct = wages
                 Else
-                    Workbook.Sheets("Provisies").Unprotect(Password:=CoCoCo_Invoicing.password)
-                    ogm_Record.Cells(1, 17) = ogm_Record.Cells(1, 17) + Amount
-                    Workbook.Sheets("Provisies").Protect(Password:=CoCoCo_Invoicing.password, AllowSorting:=True, AllowFiltering:=True)
+                    Workbook1.Sheets("Provisies").Unprotect(Password:=GlobalValues.password)
+                    ogm_Record.Cells(1, 17).text = ogm_Record.Cells(1, 17).text + Amount
+                    Workbook1.Sheets("Provisies").Protect(Password:=GlobalValues.password, AllowSorting:=True, AllowFiltering:=True)
                     gerechtskostenFct = Amount
                 End If
                 Provisies = "PE" & ogm_Record.Row
@@ -188,13 +195,13 @@ Final:
         Dim tbl As ListObject
         Dim row As Excel.Range
 
-        sht = Workbook.Sheets("Provisies")
+        sht = Workbook1.Sheets("Provisies")
         tbl = sht.ListObjects("Provisie_Table")
 
         On Error GoTo Final
 
         REM to place filter unprotect sheet
-        sht.Unprotect(Password:=CoCoCo_Invoicing.password)
+        sht.Unprotect(Password:=GlobalValues.password)
 
         REM remove the autofilter is necessairy
         With tbl
@@ -207,7 +214,7 @@ Final:
         End With
 Final:
         If (sht.ProtectContents = False) Then
-            sht.Protect(Password:=CoCoCo_Invoicing.password, AllowSorting:=True, AllowFiltering:=True)
+            sht.Protect(Password:=GlobalValues.password, AllowSorting:=True, AllowFiltering:=True)
         End If
 
     End Sub
@@ -227,51 +234,51 @@ Final:
         REM *****
         REM first lookup in Provisie_table
         REM *****
-        searchSheet = Workbook.Sheets("Provisies")
+        searchSheet = Workbook1.Sheets("Provisies")
         SearchTable = searchSheet.ListObjects("Provisie_Table")
 
         REM to place filter unprotect sheet
         Lst = SearchTable.ListRows
-        searchSheet.Unprotect(Password:=CoCoCo_Invoicing.password)
+        searchSheet.Unprotect(Password:=GlobalValues.password)
 
         REM remove the autofilter is necessairy
         With SearchTable
             .AutoFilter.ShowAllData()
             .Range.AutoFilter(Field:=14, Criteria1:=ogm)
-            searchCount = SearchTable.TotalsRowRange.Cells(1, SearchTable.ListColumns("dossiernr").Index)
+            searchCount = SearchTable.TotalsRowRange.Cells(1, SearchTable.ListColumns("dossiernr").Index).text
             If searchCount > 1 Then
                 MsgBox(Prompt:="2 ogm codes gevonden, fout in excel")
                 .AutoFilter.ShowAllData()
-                searchSheet.Protect(Password:=CoCoCo_Invoicing.password, AllowSorting:=True, AllowFiltering:=True)
-                If Workbook.Count > 1 Then
+                searchSheet.Protect(Password:=GlobalValues.password, AllowSorting:=True, AllowFiltering:=True)
+                If Workbook1.Count > 1 Then
                     ObjExcel.Workbook.Close(SaveChanges:=True)
                 Else
                     ObjExcel.Workbook.Save()
                     ObjExcel.Application.Quit()
                 End If
             ElseIf searchCount = 1 Then
-                If .DataBodyRange.SpecialCells(XlCellType.xlCellTypeVisible).Rows(1).Cells(13) = "Onwaar" Then
+                If .DataBodyRange.SpecialCells(XlCellType.xlCellTypeVisible).Rows(1).Cells(13).Value2 = "Onwaar" Then
                     ogm_Record = .DataBodyRange.SpecialCells(XlCellType.xlCellTypeVisible).Rows(1)
                     GoTo Final
                 Else
-                    dossierNr = .DataBodyRange.SpecialCells(XlCellType.xlCellTypeVisible).Rows(1).Cells(3)
+                    dossierNr = .DataBodyRange.SpecialCells(XlCellType.xlCellTypeVisible).Rows(1).Cells(3).Value2
                 End If
             Else
                 REM no row found cleaning
                 .AutoFilter.ShowAllData()
-                searchSheet.Protect(Password:=CoCoCo_Invoicing.password, AllowSorting:=True, AllowFiltering:=True)
+                searchSheet.Protect(Password:=GlobalValues.password, AllowSorting:=True, AllowFiltering:=True)
             End If
         End With
 
         REM *****
         REM Then lookup in Ereloon_nota
         REM *****
-        searchSheet = Workbook.Sheets("Ereloon Nota")
+        searchSheet = Workbook1.Sheets("Ereloon Nota")
         SearchTable = searchSheet.ListObjects("Ereloon_Nota_Table")
 
         REM to place filter unprotect sheet
         Lst = SearchTable.ListRows
-        searchSheet.Unprotect(Password:=CoCoCo_Invoicing.password)
+        searchSheet.Unprotect(Password:=GlobalValues.password)
 
         If (dossierNr = "") Then
             REM OGM not found in provisions
@@ -280,15 +287,15 @@ Final:
                 .AutoFilter.ShowAllData()
                 .Range.AutoFilter(Field:=31, Criteria1:=ogm)
                 .Range.AutoFilter(Field:=32, Criteria1:="")
-                searchCount = SearchTable.TotalsRowRange.Cells(1, SearchTable.ListColumns("dossiernr").Index)
+                searchCount = SearchTable.TotalsRowRange.Cells(1, SearchTable.ListColumns("dossiernr").Index).text
                 If searchCount > 1 Then
                     MsgBox(Prompt:="2 ogm codes gevonden, fout in excel")
                     .AutoFilter.ShowAllData()
-                    searchSheet.Protect(Password:=CoCoCo_Invoicing.password, AllowSorting:=True, AllowFiltering:=True)
+                    searchSheet.Protect(Password:=GlobalValues.password, AllowSorting:=True, AllowFiltering:=True)
                     If ObjExcel.Workbooks.Count > 1 Then
-                        Workbook.Close(SaveChanges:=True)
+                        Workbook1.Close(SaveChanges:=True)
                     Else
-                        Workbook.Save()
+                        Workbook1.Save()
                         ObjExcel.Application.Quit()
                     End If
                 ElseIf searchCount = 1 Then
@@ -306,13 +313,13 @@ Final:
             With SearchTable
                 .AutoFilter.ShowAllData()
                 .Range.AutoFilter(Field:=3, Criteria1:=dossierNr)
-                searchCount = SearchTable.TotalsRowRange.Cells(1, SearchTable.ListColumns("dossiernr").Index)
+                searchCount = SearchTable.TotalsRowRange.Cells(1, SearchTable.ListColumns("dossiernr").Index).text
                 If searchCount <> 1 Then
                     MsgBox(Prompt:="Ogm van een afgesloten provisie, geen bijhorende ereloon nota gevonden")
                     GoTo Final
                 Else
                     If MsgBox(Prompt:="OGM van een afgesloten provisie, ogm code van bijhorende ereloon nota is: " +
-                    .DataBodyRange.SpecialCells(XlCellType.xlCellTypeVisible).Rows(1).Cells(31) + ". Mag ik hier  op boeken?",
+                    .DataBodyRange.SpecialCells(XlCellType.xlCellTypeVisible).Rows(1).Cells(31).Value2 + ". Mag ik hier  op boeken?",
                     Buttons:=vbYesNo + vbQuestion) = vbYes Then
 
                         ogm_Record = .DataBodyRange.SpecialCells(XlCellType.xlCellTypeVisible).Rows(1)
@@ -329,7 +336,7 @@ Final:
         SearchTable.AutoFilter.ShowAllData()
 
         If (searchSheet.ProtectContents = False) Then
-            searchSheet.Protect(Password:=CoCoCo_Invoicing.password, AllowSorting:=True, AllowFiltering:=True)
+            searchSheet.Protect(Password:=GlobalValues.password, AllowSorting:=True, AllowFiltering:=True)
         End If
 
     End Function
@@ -344,50 +351,49 @@ Final:
         On Error GoTo Final
 
         REM search in provisies
-        searchSheet = Workbook.Sheets("Provisies")
+        searchSheet = Workbook1.Sheets("Provisies")
         SearchTable = searchSheet.ListObjects("Provisie_Table")
 
         REM to place filter unprotect sheet
         Lst = SearchTable.ListRows
-        searchSheet.Unprotect(Password:=CoCoCo_Invoicing.password)
+        searchSheet.Unprotect(Password:=GlobalValues.password)
 
         REM remove the autofilter is necessairy
         With SearchTable
             .AutoFilter.ShowAllData()
             .Range.AutoFilter(Field:=3, Criteria1:=ogm_Record.Cells(3))
             REM get all payed Erelonen and provisions
-            ogm_Record.Cells(27) = .TotalsRowRange.Cells(1, .ListColumns("Ereloon_betaald").Index) * 1.21
-            ogm_Record.Cells(28) = .TotalsRowRange.Cells(1, .ListColumns("gerechtskosten_betaald").Index)
+            ogm_Record.Cells(27).Value2 = .TotalsRowRange.Cells(1, .ListColumns("Ereloon_betaald").Index).text * 1.21
+            ogm_Record.Cells(28).Value2 = .TotalsRowRange.Cells(1, .ListColumns("gerechtskosten_betaald").Index).text
 
             REM calculate open saldo
-            readKostenSchema(kostenschemaID:=ogm_Record.Cells(.ListColumns("Kostenschema").Index))
 
             'calculate total
-            ogm_Record.Cells(29) =
-                ogm_Record.Cells(1, .ListColumns("Dactylo").Index) * kostenSchema.dactylo +
-                ogm_Record.Cells(1, .ListColumns("Fotokopies").Index) * kostenSchema.fotokopie +
-                ogm_Record.Cells(1, .ListColumns("Fax").Index) * kostenSchema.dactylo +
-                ogm_Record.Cells(1, .ListColumns("Verplaatsing").Index) * kostenSchema.verplaatsing +
-                ogm_Record.Cells(1, .ListColumns("Bijkomende_kosten").Index) + _
+            ogm_Record.Cells(29).Value2 =
+                ogm_Record.Cells(1, .ListColumns("Dactylo").Index).text * kostenSchema.dactylo +
+                ogm_Record.Cells(1, .ListColumns("Fotokopies").Index).text * kostenSchema.fotokopie +
+                ogm_Record.Cells(1, .ListColumns("Fax").Index).text * kostenSchema.dactylo +
+                ogm_Record.Cells(1, .ListColumns("Verplaatsing").Index).text * kostenSchema.verplaatsing +
+                ogm_Record.Cells(1, .ListColumns("Bijkomende_kosten").Index).text + _
  _
-                ogm_Record.Cells(1, .ListColumns("Forfait").Index) + _
+                ogm_Record.Cells(1, .ListColumns("Forfait").Index).text + _
  _
-                (ogm_Record.Cells(1, .ListColumns("erelonen_uren").Index) +
-                  ogm_Record.Cells(1, .ListColumns("erelonen_minuten").Index) / 60) * kostenSchema.prestaties + _
+                (ogm_Record.Cells(1, .ListColumns("erelonen_uren").Index).text +
+                  ogm_Record.Cells(1, .ListColumns("erelonen_minuten").Index).text / 60) * kostenSchema.prestaties + _
  _
-                (ogm_Record.Cells(1, .ListColumns("wacht_uren").Index) +
-                  ogm_Record.Cells(1, .ListColumns("wacht_minuten").Index) / 60) * kostenSchema.wacht + _
+                (ogm_Record.Cells(1, .ListColumns("wacht_uren").Index).text +
+                  ogm_Record.Cells(1, .ListColumns("wacht_minuten").Index).text / 60) * kostenSchema.wacht + _
  _
-                ogm_Record.Cells(1, .ListColumns("BTW").Index) +
-                ogm_Record.Cells(1, .ListColumns("Rolzetting").Index) +
-                ogm_Record.Cells(1, .ListColumns("Dagvaarding").Index) +
-                ogm_Record.Cells(1, .ListColumns("Betekening").Index) +
-                ogm_Record.Cells(1, .ListColumns("Uitvoering").Index) +
-                ogm_Record.Cells(1, .ListColumns("Andere").Index) +
-                ogm_Record.Cells(1, .ListColumns("Derden").Index) - _
+                ogm_Record.Cells(1, .ListColumns("BTW").Index).text +
+                ogm_Record.Cells(1, .ListColumns("Rolzetting").Index).text +
+                ogm_Record.Cells(1, .ListColumns("Dagvaarding").Index).text +
+                ogm_Record.Cells(1, .ListColumns("Betekening").Index).text +
+                ogm_Record.Cells(1, .ListColumns("Uitvoering").Index).text +
+                ogm_Record.Cells(1, .ListColumns("Andere").Index).text +
+                ogm_Record.Cells(1, .ListColumns("Derden").Index).text - _
  _
-                ogm_Record.Cells(1, .ListColumns("Provisies_erelonen").Index) -
-                ogm_Record.Cells(1, .ListColumns("Provisies_gerechtskosten").Index)
+                ogm_Record.Cells(1, .ListColumns("Provisies_erelonen").Index).text -
+                ogm_Record.Cells(1, .ListColumns("Provisies_gerechtskosten").Index).text
         End With
 
 Final:
@@ -395,7 +401,7 @@ Final:
         SearchTable.AutoFilter.ShowAllData()
 
         If (searchSheet.ProtectContents = False) Then
-            searchSheet.Protect(Password:=CoCoCo_Invoicing.password, AllowSorting:=True, AllowFiltering:=True)
+            searchSheet.Protect(Password:=GlobalValues.password, AllowSorting:=True, AllowFiltering:=True)
         End If
     End Sub
 
@@ -412,25 +418,25 @@ Final:
         '------------------------------------------------------
         'read provisies
         '------------------
-        sht = Workbook.Sheets("Provisies")
+        sht = Workbook1.Sheets("Provisies")
         tbl = sht.ListObjects("Provisie_Table")
         Lst = tbl.ListRows
-        sht.Unprotect(Password:=CoCoCo_Invoicing.password)
+        sht.Unprotect(Password:=GlobalValues.password)
 
         REM remove the autofilter is necessairy
         tbl.AutoFilter.ShowAllData()
         tbl.Range.AutoFilter(Field:=3, Criteria1:=dossierNr)
         tbl.AutoFilter.ApplyFilter()
-        Provisies_Erelonen_ExVAT = tbl.TotalsRowRange.Cells(1, tbl.ListColumns("Ereloon_betaald").Index)
-        Provisies_Erelonen_VAT = tbl.TotalsRowRange.Cells(tbl.ListColumns("BTW_betaald").Index)
+        Provisies_Erelonen_ExVAT = tbl.TotalsRowRange.Cells(1, tbl.ListColumns("Ereloon_betaald").Index).text
+        Provisies_Erelonen_VAT = tbl.TotalsRowRange.Cells(tbl.ListColumns("BTW_betaald").Index).text
         Provisies_erelonen = Provisies_Erelonen_ExVAT + Provisies_Erelonen_VAT
-        Provisies_GerechtsKosten = tbl.TotalsRowRange.Cells(tbl.ListColumns("gerechtskosten_betaald").Index)
+        Provisies_GerechtsKosten = tbl.TotalsRowRange.Cells(tbl.ListColumns("gerechtskosten_betaald").Index).text
 
         REM remove the autofilter is necessairy
         tbl.AutoFilter.ShowAllData()
 
 ErrorHandler:
-        sht.Protect(Password:=CoCoCo_Invoicing.password, AllowSorting:=True, AllowFiltering:=True)
+        sht.Protect(Password:=GlobalValues.password, AllowSorting:=True, AllowFiltering:=True)
         getSaldo = Math.Round(Provisies_Erelonen_ExVAT + Provisies_Erelonen_VAT + Provisies_GerechtsKosten + 0.000001, 2)
     End Function
 
@@ -455,10 +461,10 @@ ErrorHandler:
         Dim i As Integer
 
         REM get provisie table
-        sht = Workbook.Sheets("Provisies")
+        sht = Workbook1.Sheets("Provisies")
         tbl = sht.ListObjects("Provisie_Table")
         Lst = tbl.ListRows
-        sht.Unprotect(Password:=CoCoCo_Invoicing.password)
+        sht.Unprotect(Password:=GlobalValues.password)
 
         REM Get column id
         idGerechtskostenToPay = tbl.ListColumns("gerechtskosten").Index
@@ -482,19 +488,19 @@ ErrorHandler:
         REM for each row first fill up gerechtskosten
         rng = tbl.DataBodyRange.SpecialCells(XlCellType.xlCellTypeVisible)
         For Each row In rng.Rows
-            diff = row.Cells(1, idGerechtskostenToPay) - row.Cells(1, idGerechtskostenPayed)
+            diff = row.Cells(1, idGerechtskostenToPay).text - row.Cells(1, idGerechtskostenPayed).text
             If diff > 0 Then
                 REM if amount isn't sufficient to fill up, full up with amount and end function
                 Provisies = Provisies & " P" & row.Row
                 If diff > Amount Then
-                    row.Cells(1, idGerechtskostenToPay) = row.Cells(1, idGerechtskostenPayed) + Amount
+                    row.Cells(1, idGerechtskostenToPay).text = row.Cells(1, idGerechtskostenPayed).text + Amount
                     gerechtskostenFct = gerechtskostenFct + Amount
                     Amount = 0
                     Exit For
                 Else
-                    row.Cells(1, idGerechtskostenPayed) = row.Cells(1, idGerechtskostenToPay)
-                    If row.Cells(1, idEreloonToPay) = row.Cells(1, idEreloonPayed) Then
-                        row.Cells(1, idPayed) = True
+                    row.Cells(1, idGerechtskostenPayed).text = row.Cells(1, idGerechtskostenToPay).text
+                    If row.Cells(1, idEreloonToPay).text = row.Cells(1, idEreloonPayed).text Then
+                        row.Cells(1, idPayed).text = True
                     End If
                     gerechtskostenFct = gerechtskostenFct + diff
                     Amount = Amount - diff
@@ -513,21 +519,21 @@ ErrorHandler:
         REM for each row then fill up erelonen
         rng = tbl.DataBodyRange.SpecialCells(XlCellType.xlCellTypeVisible)
         For Each row In rng.Rows
-            diff = row.Cells(1, idEreloonToPay) - row.Cells(1, idEreloonPayed)
+            diff = row.Cells(1, idEreloonToPay).text - row.Cells(1, idEreloonPayed).text
             If diff > 0 Then
                 REM if amount isn't sufficient to fill up, full up with amount and end function
                 REM diff is without 21% VAT
                 Provisies = Provisies & " ES" & row.Row
                 If diff * 1.21 > Amount Then
-                    row.Cells(1, idEreloonPayed) = row.Cells(1, idEreloonPayed) + (Amount / 1.21)
-                    row.Cells(1, idVATPayed) = row.Cells(1, idVATPayed) + (Amount / 1.21 * 0.21)
+                    row.Cells(1, idEreloonPayed).text = row.Cells(1, idEreloonPayed).text + (Amount / 1.21)
+                    row.Cells(1, idVATPayed).text = row.Cells(1, idVATPayed).text + (Amount / 1.21 * 0.21)
                     ereloonFct = ereloonFct + (Amount / 1.21)
                     Amount = 0
                     Exit For
                 Else
-                    row.Cells(1, idEreloonPayed) = row.Cells(1, idEreloonToPay)
-                    row.Cells(1, idVATPayed) = row.Cells(1, idVATToPay)
-                    row.Cells(1, idPayed) = True
+                    row.Cells(1, idEreloonPayed).text = row.Cells(1, idEreloonToPay).text
+                    row.Cells(1, idVATPayed).text = row.Cells(1, idVATToPay).text
+                    row.Cells(1, idPayed).text = True
                     ereloonFct = ereloonFct + diff
                     Amount = Amount - diff * 1.21
                     If Amount <= 0 Then
@@ -546,7 +552,7 @@ Add_Row_:
         With Lst.Add.Range
             .Cells(1) = Now
             For i = 2 To 8
-                .Cells(i) = ogm_Record.Cells(i).Value
+                .Cells(i) = ogm_Record.Cells(i).text
             Next
 
             If ogm_Record.Columns.Count > 30 Then
@@ -555,9 +561,9 @@ Add_Row_:
                 tbl.AutoFilter.ShowAllData()
                 tbl.Range.AutoFilter(Field:=3, Criteria1:=ogm_Record.Cells(3))
                 tbl.AutoFilter.ApplyFilter()
-                gerechtskosten = ogm_Record.Cells(21) + ogm_Record.Cells(22) + ogm_Record.Cells(23) _
-                + ogm_Record.Cells(24) + ogm_Record.Cells(25) -
-                tbl.TotalsRowRange.Cells(1, tbl.ListColumns("gerechtskosten_betaald").Index)
+                gerechtskosten = ogm_Record.Cells(21).Value2 + ogm_Record.Cells(22).Value2 + ogm_Record.Cells(23).Value2 _
+                + ogm_Record.Cells(24).Value2 + ogm_Record.Cells(25).Value2 -
+                tbl.TotalsRowRange.Cells(1, tbl.ListColumns("gerechtskosten_betaald").Index).text
             Else
                 gerechtskosten = 0
             End If
@@ -569,19 +575,19 @@ Add_Row_:
                 ereloon = (Amount - gerechtskosten) / 1.21
             End If
 
-            .Cells(tbl.ListColumns("Ereloon").Index) = ereloon
-            .Cells(tbl.ListColumns("BTW").Index) = ereloon * 0.21
-            .Cells(tbl.ListColumns("Ereloon_betaald").Index) = ereloon
-            .Cells(tbl.ListColumns("BTW_betaald").Index) = ereloon * 0.21
-            .Cells(tbl.ListColumns("totaal").Index) = Amount
-            .Cells(tbl.ListColumns("betaald").Index) = True
-            .Cells(tbl.ListColumns("gerechtskosten").Index) = gerechtskosten
-            .Cells(tbl.ListColumns("gerechtskosten_betaald").Index) = gerechtskosten
+            .Cells(tbl.ListColumns("Ereloon").Index).text = ereloon
+            .Cells(tbl.ListColumns("BTW").Index).text = ereloon * 0.21
+            .Cells(tbl.ListColumns("Ereloon_betaald").Index).text = ereloon
+            .Cells(tbl.ListColumns("BTW_betaald").Index).text = ereloon * 0.21
+            .Cells(tbl.ListColumns("totaal").Index).text = Amount
+            .Cells(tbl.ListColumns("betaald").Index).text = True
+            .Cells(tbl.ListColumns("gerechtskosten").Index).text = gerechtskosten
+            .Cells(tbl.ListColumns("gerechtskosten_betaald").Index).text = gerechtskosten
 
             ereloonFct = ereloonFct + ereloon
             gerechtskostenFct = gerechtskostenFct + gerechtskosten
 
-            .Cells(tbl.ListColumns("ogmnummer").Index) = "+++ / / +++"
+            .Cells(tbl.ListColumns("ogmnummer").Index).text = "+++ / / +++"
 
             Provisies = Provisies & " EP" & .Row
         End With
@@ -593,7 +599,7 @@ End_:
         Fill_provisies = Amount
 
         tbl.AutoFilter.ShowAllData()
-        sht.Protect(Password:=CoCoCo_Invoicing.password, AllowSorting:=True, AllowFiltering:=True)
+        sht.Protect(Password:=GlobalValues.password, AllowSorting:=True, AllowFiltering:=True)
 
     End Function
 
@@ -605,9 +611,11 @@ End_:
         Dim row, bottomRow As Word.Row
         Dim subtotal_ExVAT, subtotal_NoVAT, subtotal As Double
 
+        kostenSchema = New Kostenschema(index:=ogm_Record.Cells(9).Value2)
+        factuurData = New InvoiceData(ogm_Record)
         'Create document
         objWord = CreateObject("Word.Application")
-        Document = objWord.Documents.Add(Template:=invoiceTemplate, Visible:=True)
+        Document = objWord.Documents.Add(Template:=GlobalValues.invoiceTemplate, Visible:=True)
 
         'Fill header
         AddHeader(Document:=Document, Factuurnummer:=Factuurnummer)
@@ -639,19 +647,19 @@ End_:
             .Cells(2).Merge(MergeTo:= .Cells(5))
             .Cells(2).Range.InsertAfter(Text:="Subtotaal excl Btw")
             .Cells(2).Range.ParagraphFormat.Alignment = WdParagraphAlignment.wdAlignParagraphLeft
-            .Cells(3).Range.InsertAfter(Text:=Format(Expression:=subtotal_ExVAT - Prov_Erelonen, Style:=NumberFormat))
+            .Cells(3).Range.InsertAfter(Text:=Format(Expression:=subtotal_ExVAT - Prov_Erelonen, Style:=GlobalValues.NumberFormat))
             .Range.ParagraphFormat.KeepWithNext = True
         End With
 
         With table.Rows.Add
             .Cells(2).Range.InsertAfter(Text:="Subtotaal Btw")
-            .Cells(3).Range.InsertAfter(Text:=Format(Expression:=subtotal_ExVAT * 0.21 - Prov_BTW, Style:=NumberFormat))
+            .Cells(3).Range.InsertAfter(Text:=Format(Expression:=subtotal_ExVAT * 0.21 - Prov_BTW, Style:=GlobalValues.NumberFormat))
             .Range.ParagraphFormat.KeepWithNext = True
         End With
 
         With table.Rows.Add
             .Cells(2).Range.InsertAfter(Text:="Subtotaal derden en gerechtskosten")
-            .Cells(3).Range.InsertAfter(Text:=Format(Expression:=subtotal_NoVAT - Prov_Gerecht, Style:=NumberFormat))
+            .Cells(3).Range.InsertAfter(Text:=Format(Expression:=subtotal_NoVAT - Prov_Gerecht, Style:=GlobalValues.NumberFormat))
             .Range.ParagraphFormat.KeepWithNext = True
         End With
 
@@ -659,7 +667,7 @@ End_:
         With table.Rows.Add
             .Cells(2).Range.InsertAfter(Text:="Totaal")
             .Cells(2).Range.ParagraphFormat.Alignment = WdParagraphAlignment.wdAlignParagraphCenter
-            .Cells(3).Range.InsertAfter(Text:=Format(Expression:=Total, Style:=NumberFormat))
+            .Cells(3).Range.InsertAfter(Text:=Format(Expression:=Total, Style:=GlobalValues.NumberFormat))
             .Cells(3).Borders(WdBorderType.wdBorderTop).Visible = True
             .Cells(2).Range.Font.Bold = True
             .Cells(3).Range.Font.Bold = True
@@ -710,7 +718,7 @@ closeWord:
 
         'Create document
         objWord = CreateObject("Word.Application")
-        Document = objWord.Documents.Add(Template:=invoiceTemplate, Visible:=True)
+        Document = objWord.Documents.Add(Template:=GlobalValues.invoiceTemplate, Visible:=True)
 
         'Fill header
         AddHeader(Document:=Document, Factuurnummer:=Factuurnummer)
@@ -741,13 +749,13 @@ closeWord:
                 .Cells(2).Merge(MergeTo:= .Cells(5))
                 .Cells(2).Range.InsertAfter(Text:="Subtotaal excl Btw")
                 .Cells(2).Range.ParagraphFormat.Alignment = WdParagraphAlignment.wdAlignParagraphLeft
-                .Cells(3).Range.InsertAfter(Text:=Format(Expression:=subtotal_ExVAT, Style:=NumberFormat))
+                .Cells(3).Range.InsertAfter(Text:=Format(Expression:=subtotal_ExVAT, Style:=GlobalValues.NumberFormat))
                 .Range.ParagraphFormat.KeepWithNext = True
             End With
 
             With table.Rows.Add
                 .Cells(2).Range.InsertAfter(Text:="Subtotaal Btw")
-                .Cells(3).Range.InsertAfter(Text:=Format(Expression:=subtotal_ExVAT * 0.21, Style:=NumberFormat))
+                .Cells(3).Range.InsertAfter(Text:=Format(Expression:=subtotal_ExVAT * 0.21, Style:=GlobalValues.NumberFormat))
                 .Range.ParagraphFormat.KeepWithNext = True
             End With
         End If
@@ -755,7 +763,7 @@ closeWord:
         If (subtotal_NoVAT <> 0) Then
             With table.Rows.Add
                 .Cells(2).Range.InsertAfter(Text:="Subtotaal derden en gerechtskosten")
-                .Cells(3).Range.InsertAfter(Text:=Format(Expression:=subtotal_NoVAT, Style:=NumberFormat))
+                .Cells(3).Range.InsertAfter(Text:=Format(Expression:=subtotal_NoVAT, Style:=GlobalValues.NumberFormat))
                 .Range.ParagraphFormat.KeepWithNext = True
             End With
         End If
@@ -764,7 +772,7 @@ closeWord:
             With table.Rows.Add
                 .Cells(2).Range.InsertAfter(Text:="Totaal")
                 .Cells(2).Range.ParagraphFormat.Alignment = WdParagraphAlignment.wdAlignParagraphCenter
-                .Cells(3).Range.InsertAfter(Text:=Format(Expression:=subtotal_ExVAT * 1.21 + subtotal_NoVAT, Style:=NumberFormat))
+                .Cells(3).Range.InsertAfter(Text:=Format(Expression:=subtotal_ExVAT * 1.21 + subtotal_NoVAT, Style:=GlobalValues.NumberFormat))
                 .Cells(3).Borders(WdBorderType.wdBorderTop).Visible = True
                 .Cells(2).Range.Font.Bold = True
                 .Cells(3).Range.Font.Bold = True
@@ -810,33 +818,7 @@ closeWord:
     End Sub
 
     REM checked
-    Private Sub readKostenSchema(ByVal kostenschemaID As Integer)
-        Dim table As ListObject
-        Dim row As ListRow
-        Dim rownum As Integer
-        table = Workbook.Sheets("KostenSchemas").ListObjects("Kostenschema")
-        rownum = -1
 
-        'find rownr of asked kostenschema
-        For Each row In table.ListRows
-            If row.Range.Cells(1).Value = kostenschemaID Then
-                rownum = row.Index
-            End If
-        Next
-
-        If rownum = -1 Then
-            MsgBox("Kostenschema niet meer gevonden")
-            Return
-        End If
-
-        kostenSchema.dactylo = table.ListColumns("Dactylo").DataBodyRange(rownum).Value
-        kostenSchema.fotokopie = table.ListColumns("fotokopie").DataBodyRange(rownum).Value
-        kostenSchema.mail = table.ListColumns("mail").DataBodyRange(rownum).Value
-        kostenSchema.prestaties = table.ListColumns("Prestatie").DataBodyRange(rownum).Value
-        kostenSchema.verplaatsing = table.ListColumns("verplaatsing").DataBodyRange(rownum).Value
-        kostenSchema.wacht = table.ListColumns("Wacht").DataBodyRange(rownum).Value
-
-    End Sub
 
     REM checked
     Private Sub AddTitleRow(ByRef row As Row, ByVal title As String)
@@ -853,7 +835,7 @@ closeWord:
         Dim totalrow As Row
         If Total <> 0 Then
             totalrow = table.Rows.Add
-            totalrow.Cells(6).Range.InsertAfter(Format(Expression:=Total, Style:=NumberFormat))
+            totalrow.Cells(6).Range.InsertAfter(Format(Expression:=Total, Style:=GlobalValues.NumberFormat))
 
             'add empty row after total
             table.Rows.Add.Range.ParagraphFormat.KeepWithNext = False
@@ -905,9 +887,9 @@ closeWord:
                     With table.Rows.Add
                         .Borders(WdBorderType.wdBorderTop).Visible = False
                         .Cells(1).Range.InsertAfter("- Provisie erelonen:")
-                        .Cells(4).Range.InsertAfter(Format(Expression:=ereloonFct, Style:=NumberFormat))
-                        .Cells(5).Range.InsertAfter(Format(Expression:=ereloonFct * 0.21, Style:=NumberFormat))
-                        .Cells(6).Range.InsertAfter(Format(Expression:=ereloonFct * 1.21, Style:=NumberFormat))
+                        .Cells(4).Range.InsertAfter(Format(Expression:=ereloonFct, Style:=GlobalValues.NumberFormat))
+                        .Cells(5).Range.InsertAfter(Format(Expression:=ereloonFct * 0.21, Style:=GlobalValues.NumberFormat))
+                        .Cells(6).Range.InsertAfter(Format(Expression:=ereloonFct * 1.21, Style:=GlobalValues.NumberFormat))
                         .Range.ParagraphFormat.KeepWithNext = True
                         subtotal = subtotal + ereloonFct
                     End With
@@ -926,10 +908,10 @@ closeWord:
                         .Cells(1).Range.InsertAfter("- erelonen:")
                         .Cells(2).Range.InsertAfter(Format(Expression:=pHours, Style:="#0") &
                                                 ":" & Format(Expression:=pMinutes, Style:="00"))
-                        .Cells(3).Range.InsertAfter(Format(Expression:=kostenSchema.prestaties, Style:=NumberFormat))
-                        .Cells(4).Range.InsertAfter(Format(Expression:=wages, Style:=NumberFormat))
-                        .Cells(5).Range.InsertAfter(Format(Expression:=wages * 0.21, Style:=NumberFormat))
-                        .Cells(6).Range.InsertAfter(Format(Expression:=wages * 1.21, Style:=NumberFormat))
+                        .Cells(3).Range.InsertAfter(Format(Expression:=kostenSchema.prestaties, Style:=GlobalValues.NumberFormat))
+                        .Cells(4).Range.InsertAfter(Format(Expression:=wages, Style:=GlobalValues.NumberFormat))
+                        .Cells(5).Range.InsertAfter(Format(Expression:=wages * 0.21, Style:=GlobalValues.NumberFormat))
+                        .Cells(6).Range.InsertAfter(Format(Expression:=wages * 1.21, Style:=GlobalValues.NumberFormat))
                         .Range.ParagraphFormat.KeepWithNext = True
                         subtotal = subtotal + wages
                     End With
@@ -947,10 +929,10 @@ closeWord:
                         .Cells(1).Range.InsertAfter("- verplaatsingen/wachttijden:")
                         .Cells(2).Range.InsertAfter(Format(Expression:=wHours, Style:="#0") &
                                             ":" & Format(Expression:=wMinutes, Style:="00"))
-                        .Cells(3).Range.InsertAfter(Format(Expression:=kostenSchema.wacht, Style:=NumberFormat))
-                        .Cells(4).Range.InsertAfter(Format(Expression:=wait, Style:=NumberFormat))
-                        .Cells(5).Range.InsertAfter(Format(Expression:=wait * 0.21, Style:=NumberFormat))
-                        .Cells(6).Range.InsertAfter(Format(Expression:=wait * 1.21, Style:=NumberFormat))
+                        .Cells(3).Range.InsertAfter(Format(Expression:=kostenSchema.wacht, Style:=GlobalValues.NumberFormat))
+                        .Cells(4).Range.InsertAfter(Format(Expression:=wait, Style:=GlobalValues.NumberFormat))
+                        .Cells(5).Range.InsertAfter(Format(Expression:=wait * 0.21, Style:=GlobalValues.NumberFormat))
+                        .Cells(6).Range.InsertAfter(Format(Expression:=wait * 1.21, Style:=GlobalValues.NumberFormat))
                         .Range.ParagraphFormat.KeepWithNext = True
                     End With
                     subtotal = subtotal + wait
@@ -982,15 +964,8 @@ closeWord:
         'add header row
         titleRow = table.Rows.Add
 
-        searchSheet = Workbook.Sheets("Ereloon Nota")
+        searchSheet = Workbook1.Sheets("Ereloon Nota")
         SearchTable = searchSheet.ListObjects("Ereloon_Nota_Table")
-
-        factuurData.dactylo = ogm_Record.Cells(SearchTable.ListColumns("Dactylo").Index)
-        factuurData.fotokopies = ogm_Record.Cells(SearchTable.ListColumns("Fotokopies").Index)
-        factuurData.fax = ogm_Record.Cells(SearchTable.ListColumns("Fax").Index)
-        factuurData.verplaatsing = ogm_Record.Cells(SearchTable.ListColumns("Verplaatsing").Index)
-        factuurData.bijkomende_kosten = ogm_Record.Cells(SearchTable.ListColumns("Bijkomende_kosten").Index)
-        factuurData.forfait = ogm_Record.Cells(SearchTable.ListColumns("Forfait").Index)
 
         'Add Dactylo
         If factuurData.dactylo <> 0 Then
@@ -1000,10 +975,10 @@ closeWord:
                 .Borders(WdBorderType.wdBorderTop).Visible = False
                 .Cells(1).Range.InsertAfter("- briefwisseling / dactylo:")
                 .Cells(2).Range.InsertAfter(Format(Expression:=factuurData.dactylo, Style:="#0"))
-                .Cells(3).Range.InsertAfter(Format(Expression:=kostenSchema.dactylo, Style:=NumberFormat))
-                .Cells(4).Range.InsertAfter(Format(Expression:=dactylo, Style:=NumberFormat))
-                .Cells(5).Range.InsertAfter(Format(Expression:=dactylo * 0.21, Style:=NumberFormat))
-                .Cells(6).Range.InsertAfter(Format(Expression:=dactylo * 1.21, Style:=NumberFormat))
+                .Cells(3).Range.InsertAfter(Format(Expression:=kostenSchema.dactylo, Style:=GlobalValues.NumberFormat))
+                .Cells(4).Range.InsertAfter(Format(Expression:=dactylo, Style:=GlobalValues.NumberFormat))
+                .Cells(5).Range.InsertAfter(Format(Expression:=dactylo * 0.21, Style:=GlobalValues.NumberFormat))
+                .Cells(6).Range.InsertAfter(Format(Expression:=dactylo * 1.21, Style:=GlobalValues.NumberFormat))
                 .Range.ParagraphFormat.KeepWithNext = True
                 subtotal = subtotal + dactylo
             End With
@@ -1017,10 +992,10 @@ closeWord:
                 .Borders(WdBorderType.wdBorderTop).Visible = False
                 .Cells(1).Range.InsertAfter("- fotokopie:")
                 .Cells(2).Range.InsertAfter(Format(Expression:=factuurData.fotokopies, Style:="#0"))
-                .Cells(3).Range.InsertAfter(Format(Expression:=kostenSchema.fotokopie, Style:=NumberFormat))
-                .Cells(4).Range.InsertAfter(Format(Expression:=fotokopies, Style:=NumberFormat))
-                .Cells(5).Range.InsertAfter(Format(Expression:=fotokopies * 0.21, Style:=NumberFormat))
-                .Cells(6).Range.InsertAfter(Format(Expression:=fotokopies * 1.21, Style:=NumberFormat))
+                .Cells(3).Range.InsertAfter(Format(Expression:=kostenSchema.fotokopie, Style:=GlobalValues.NumberFormat))
+                .Cells(4).Range.InsertAfter(Format(Expression:=fotokopies, Style:=GlobalValues.NumberFormat))
+                .Cells(5).Range.InsertAfter(Format(Expression:=fotokopies * 0.21, Style:=GlobalValues.NumberFormat))
+                .Cells(6).Range.InsertAfter(Format(Expression:=fotokopies * 1.21, Style:=GlobalValues.NumberFormat))
                 .Range.ParagraphFormat.KeepWithNext = True
                 subtotal = subtotal + fotokopies
             End With
@@ -1034,10 +1009,10 @@ closeWord:
                 .Borders(WdBorderType.wdBorderTop).Visible = False
                 .Cells(1).Range.InsertAfter("- inkomende fax of mail:")
                 .Cells(2).Range.InsertAfter(Format(Expression:=factuurData.fax, Style:="#0"))
-                .Cells(3).Range.InsertAfter(Format(Expression:=kostenSchema.mail, Style:=NumberFormat))
-                .Cells(4).Range.InsertAfter(Format(Expression:=fax, Style:=NumberFormat))
-                .Cells(5).Range.InsertAfter(Format(Expression:=fax * 0.21, Style:=NumberFormat))
-                .Cells(6).Range.InsertAfter(Format(Expression:=fax * 1.21, Style:=NumberFormat))
+                .Cells(3).Range.InsertAfter(Format(Expression:=kostenSchema.mail, Style:=GlobalValues.NumberFormat))
+                .Cells(4).Range.InsertAfter(Format(Expression:=fax, Style:=GlobalValues.NumberFormat))
+                .Cells(5).Range.InsertAfter(Format(Expression:=fax * 0.21, Style:=GlobalValues.NumberFormat))
+                .Cells(6).Range.InsertAfter(Format(Expression:=fax * 1.21, Style:=GlobalValues.NumberFormat))
                 .Range.ParagraphFormat.KeepWithNext = True
                 subtotal = subtotal + fax
             End With
@@ -1051,10 +1026,10 @@ closeWord:
                 .Borders(WdBorderType.wdBorderTop).Visible = False
                 .Cells(1).Range.InsertAfter("- verplaatsingen (km):")
                 .Cells(2).Range.InsertAfter(Format(Expression:=factuurData.verplaatsing, Style:="#0"))
-                .Cells(3).Range.InsertAfter(Format(Expression:=kostenSchema.verplaatsing, Style:=NumberFormat))
-                .Cells(4).Range.InsertAfter(Format(Expression:=verplaatsing, Style:=NumberFormat))
-                .Cells(5).Range.InsertAfter(Format(Expression:=verplaatsing * 0.21, Style:=NumberFormat))
-                .Cells(6).Range.InsertAfter(Format(Expression:=verplaatsing * 1.21, Style:=NumberFormat))
+                .Cells(3).Range.InsertAfter(Format(Expression:=kostenSchema.verplaatsing, Style:=GlobalValues.NumberFormat))
+                .Cells(4).Range.InsertAfter(Format(Expression:=verplaatsing, Style:=GlobalValues.NumberFormat))
+                .Cells(5).Range.InsertAfter(Format(Expression:=verplaatsing * 0.21, Style:=GlobalValues.NumberFormat))
+                .Cells(6).Range.InsertAfter(Format(Expression:=verplaatsing * 1.21, Style:=GlobalValues.NumberFormat))
                 .Range.ParagraphFormat.KeepWithNext = True
                 subtotal = subtotal + verplaatsing
             End With
@@ -1065,9 +1040,9 @@ closeWord:
             With table.Rows.Add
                 .Borders(WdBorderType.wdBorderTop).Visible = False
                 .Cells(1).Range.InsertAfter("- andere kostenen:")
-                .Cells(4).Range.InsertAfter(Format(Expression:=factuurData.bijkomende_kosten, Style:=NumberFormat))
-                .Cells(5).Range.InsertAfter(Format(Expression:=factuurData.bijkomende_kosten * 0.21, Style:=NumberFormat))
-                .Cells(6).Range.InsertAfter(Format(Expression:=factuurData.bijkomende_kosten * 1.21, Style:=NumberFormat))
+                .Cells(4).Range.InsertAfter(Format(Expression:=factuurData.bijkomende_kosten, Style:=GlobalValues.NumberFormat))
+                .Cells(5).Range.InsertAfter(Format(Expression:=factuurData.bijkomende_kosten * 0.21, Style:=GlobalValues.NumberFormat))
+                .Cells(6).Range.InsertAfter(Format(Expression:=factuurData.bijkomende_kosten * 1.21, Style:=GlobalValues.NumberFormat))
                 .Range.ParagraphFormat.KeepWithNext = True
                 subtotal = subtotal + factuurData.bijkomende_kosten
             End With
@@ -1078,9 +1053,9 @@ closeWord:
             With table.Rows.Add
                 .Borders(WdBorderType.wdBorderTop).Visible = False
                 .Cells(1).Range.InsertAfter("- opstarten dossier:")
-                .Cells(4).Range.InsertAfter(Format(Expression:=factuurData.forfait, Style:=NumberFormat))
-                .Cells(5).Range.InsertAfter(Format(Expression:=factuurData.forfait * 0.21, Style:=NumberFormat))
-                .Cells(6).Range.InsertAfter(Format(Expression:=factuurData.forfait * 1.21, Style:=NumberFormat))
+                .Cells(4).Range.InsertAfter(Format(Expression:=factuurData.forfait, Style:=GlobalValues.NumberFormat))
+                .Cells(5).Range.InsertAfter(Format(Expression:=factuurData.forfait * 0.21, Style:=GlobalValues.NumberFormat))
+                .Cells(6).Range.InsertAfter(Format(Expression:=factuurData.forfait * 1.21, Style:=GlobalValues.NumberFormat))
                 .Range.ParagraphFormat.KeepWithNext = True
                 subtotal = subtotal + factuurData.forfait
             End With
@@ -1104,10 +1079,10 @@ closeWord:
 
         On Error GoTo Final
 
-        sht = Workbook.Sheets("Provisies")
+        sht = Workbook1.Sheets("Provisies")
         tbl = sht.ListObjects("Provisie_Table")
 
-        sht.Unprotect(Password:=CoCoCo_Invoicing.password)
+        sht.Unprotect(Password:=GlobalValues.password)
         REM remove the autofilter is necessairy
         tbl.AutoFilter.ShowAllData()
         tbl.Range.AutoFilter(Field:=3, Criteria1:=dossierNr)
@@ -1128,7 +1103,7 @@ closeWord:
             With table.Rows.Add
                 .Borders(WdBorderType.wdBorderTop).Visible = False
                 .Cells(1).Range.InsertAfter("- al gefact erelonen:")
-                .Cells(6).Range.InsertAfter(Format(Expression:=-Prov_Erelonen, Style:=NumberFormat))
+                .Cells(6).Range.InsertAfter(Format(Expression:=-Prov_Erelonen, Style:=GlobalValues.NumberFormat))
                 .Range.ParagraphFormat.KeepWithNext = True
                 subtotal = subtotal + Prov_Erelonen
             End With
@@ -1137,7 +1112,7 @@ closeWord:
             With table.Rows.Add
                 .Borders(WdBorderType.wdBorderTop).Visible = False
                 .Cells(1).Range.InsertAfter("- al gefact BTW:")
-                .Cells(6).Range.InsertAfter(Format(Expression:=-Prov_BTW, Style:=NumberFormat))
+                .Cells(6).Range.InsertAfter(Format(Expression:=-Prov_BTW, Style:=GlobalValues.NumberFormat))
                 .Range.ParagraphFormat.KeepWithNext = True
                 subtotal = subtotal + Prov_BTW
             End With
@@ -1148,7 +1123,7 @@ closeWord:
             With table.Rows.Add
                 .Borders(WdBorderType.wdBorderTop).Visible = False
                 .Cells(1).Range.InsertAfter("- al gefact. provisies ")
-                .Cells(6).Range.InsertAfter(Format(Expression:=-Prov_Gerecht, Style:=NumberFormat))
+                .Cells(6).Range.InsertAfter(Format(Expression:=-Prov_Gerecht, Style:=GlobalValues.NumberFormat))
                 .Range.ParagraphFormat.KeepWithNext = True
                 subtotal = subtotal + Prov_Gerecht
             End With
@@ -1163,7 +1138,7 @@ closeWord:
         AddPayedProvisions = subtotal
 
 Final:
-        sht.Protect(Password:=CoCoCo_Invoicing.password, AllowSorting:=True, AllowFiltering:=True)
+        sht.Protect(Password:=GlobalValues.password, AllowSorting:=True, AllowFiltering:=True)
 
     End Function
 
@@ -1185,7 +1160,7 @@ Final:
                     With table.Rows.Add
                         .Borders(WdBorderType.wdBorderTop).Visible = False
                         .Cells(1).Range.InsertAfter("- gerechtskosten:")
-                        .Cells(6).Range.InsertAfter(Format(Expression:=gerechtskostenFct, Style:=NumberFormat))
+                        .Cells(6).Range.InsertAfter(Format(Expression:=gerechtskostenFct, Style:=GlobalValues.NumberFormat))
                         .Range.ParagraphFormat.KeepWithNext = True
                         subtotal = subtotal + gerechtskostenFct
                     End With
@@ -1193,21 +1168,15 @@ Final:
 
             Case Is = "ereloon"
 
-                sht = Workbook.Sheets("Ereloon Nota")
+                sht = Workbook1.Sheets("Ereloon Nota")
                 tbl = sht.ListObjects("Ereloon_Nota_Table")
-
-                factuurData.rolzetting = ogm_Record.Cells(tbl.ListColumns("Rolzetting").Index)
-                factuurData.dagvaarding = ogm_Record.Cells(tbl.ListColumns("Dagvaarding").Index)
-                factuurData.betekening = ogm_Record.Cells(tbl.ListColumns("Betekening").Index)
-                factuurData.uitvoering = ogm_Record.Cells(tbl.ListColumns("Uitvoering").Index)
-                factuurData.andere = ogm_Record.Cells(tbl.ListColumns("Andere").Index)
 
                 'Add scheduling cost
                 If factuurData.rolzetting <> 0 Then
                     With table.Rows.Add
                         .Borders(WdBorderType.wdBorderTop).Visible = False
                         .Cells(1).Range.InsertAfter("- rolzetting:")
-                        .Cells(6).Range.InsertAfter(Format(Expression:=factuurData.rolzetting, Style:=NumberFormat))
+                        .Cells(6).Range.InsertAfter(Format(Expression:=factuurData.rolzetting, Style:=GlobalValues.NumberFormat))
                         .Range.ParagraphFormat.KeepWithNext = True
                         subtotal = subtotal + factuurData.rolzetting
                     End With
@@ -1218,7 +1187,7 @@ Final:
                     With table.Rows.Add
                         .Borders(WdBorderType.wdBorderTop).Visible = False
                         .Cells(1).Range.InsertAfter("- dagvaardingen:")
-                        .Cells(6).Range.InsertAfter(Format(Expression:=factuurData.dagvaarding, Style:=NumberFormat))
+                        .Cells(6).Range.InsertAfter(Format(Expression:=factuurData.dagvaarding, Style:=GlobalValues.NumberFormat))
                         .Range.ParagraphFormat.KeepWithNext = True
                         subtotal = subtotal + factuurData.dagvaarding
                     End With
@@ -1229,7 +1198,7 @@ Final:
                     With table.Rows.Add
                         .Borders(WdBorderType.wdBorderTop).Visible = False
                         .Cells(1).Range.InsertAfter("- betekeningen:")
-                        .Cells(6).Range.InsertAfter(Format(Expression:=factuurData.betekening, Style:=NumberFormat))
+                        .Cells(6).Range.InsertAfter(Format(Expression:=factuurData.betekening, Style:=GlobalValues.NumberFormat))
                         .Range.ParagraphFormat.KeepWithNext = True
                         subtotal = subtotal + factuurData.betekening
                     End With
@@ -1240,7 +1209,7 @@ Final:
                     With table.Rows.Add
                         .Borders(WdBorderType.wdBorderTop).Visible = False
                         .Cells(1).Range.InsertAfter("- uitvoering:")
-                        .Cells(6).Range.InsertAfter(Format(Expression:=factuurData.uitvoering, Style:=NumberFormat))
+                        .Cells(6).Range.InsertAfter(Format(Expression:=factuurData.uitvoering, Style:=GlobalValues.NumberFormat))
                         .Range.ParagraphFormat.KeepWithNext = True
                         subtotal = subtotal + factuurData.uitvoering
                     End With
@@ -1251,7 +1220,7 @@ Final:
                     With table.Rows.Add
                         .Borders(WdBorderType.wdBorderTop).Visible = False
                         .Cells(1).Range.InsertAfter("- andere:")
-                        .Cells(6).Range.InsertAfter(Format(Expression:=factuurData.andere, Style:=NumberFormat))
+                        .Cells(6).Range.InsertAfter(Format(Expression:=factuurData.andere, Style:=GlobalValues.NumberFormat))
                         .Range.ParagraphFormat.KeepWithNext = True
                         subtotal = subtotal + factuurData.andere
                     End With
@@ -1284,7 +1253,7 @@ Final:
             With table.Rows.Add
                 .Borders(WdBorderType.wdBorderTop).Visible = False
                 .Cells(1).Range.InsertAfter("- derdengelden:")
-                .Cells(6).Range.InsertAfter(Format(Expression:=-factuurData.derden, Style:=NumberFormat))
+                .Cells(6).Range.InsertAfter(Format(Expression:=-factuurData.derden, Style:=GlobalValues.NumberFormat))
                 .Range.ParagraphFormat.KeepWithNext = True
                 subtotal = subtotal - factuurData.derden
             End With
@@ -1295,7 +1264,7 @@ Final:
             With table.Rows.Add
                 .Borders(WdBorderType.wdBorderTop).Visible = False
                 .Cells(1).Range.InsertAfter("- provisie erelonen:")
-                .Cells(6).Range.InsertAfter(Format(Expression:=-factuurData.provisie_erelonen, Style:=NumberFormat))
+                .Cells(6).Range.InsertAfter(Format(Expression:=-factuurData.provisie_erelonen, Style:=GlobalValues.NumberFormat))
                 .Range.ParagraphFormat.KeepWithNext = True
                 subtotal = subtotal - factuurData.provisie_erelonen
             End With
@@ -1306,7 +1275,7 @@ Final:
             With table.Rows.Add
                 .Borders(WdBorderType.wdBorderTop).Visible = False
                 .Cells(1).Range.InsertAfter("- provisie gerechtskosten:")
-                .Cells(6).Range.InsertAfter(Format(Expression:=-factuurData.provisie_gerechtskosten, Style:=NumberFormat))
+                .Cells(6).Range.InsertAfter(Format(Expression:=-factuurData.provisie_gerechtskosten, Style:=GlobalValues.NumberFormat))
                 .Range.ParagraphFormat.KeepWithNext = True
                 subtotal = subtotal - factuurData.provisie_gerechtskosten
             End With
@@ -1328,10 +1297,10 @@ Final:
 
         On Error GoTo Final
 
-        sht = Workbook.Sheets("Facturen")
+        sht = Workbook1.Sheets("Facturen")
         tbl = sht.ListObjects("Invoice_table")
 
-        sht.Unprotect(Password:=CoCoCo_Invoicing.password)
+        sht.Unprotect(Password:=GlobalValues.password)
 
         With tbl.ListRows.Add.Range
             'Fill general information
@@ -1360,7 +1329,7 @@ Final:
 
 Final:
         If (sht.ProtectContents = False) Then
-            sht.Protect(Password:=CoCoCo_Invoicing.password, AllowSorting:=True, AllowFiltering:=True)
+            sht.Protect(Password:=GlobalValues.password, AllowSorting:=True, AllowFiltering:=True)
         End If
 
     End Sub
@@ -1371,34 +1340,52 @@ Final:
 
         On Error GoTo Final
 
-        sht = Workbook.Sheets("Parameters")
-        sht.Unprotect(Password:=CoCoCo_Invoicing.password)
+        sht = Workbook1.Sheets("Parameters")
+        sht.Unprotect(Password:=GlobalValues.password)
 
-        Factuurnummer = Workbook.Names("FactuurNummer").RefersToRange.Cells(1).Value
-        Workbook.Names("FactuurNummer").RefersToRange.Cells(1) = Factuurnummer + 1
+        Factuurnummer = Workbook1.Names("FactuurNummer").RefersToRange.Cells(1).Value
+        Workbook1.Names("FactuurNummer").RefersToRange.Cells(1) = Factuurnummer + 1
 
         NextInvoiceNumber = Format(Year(Now()), "0000") & Format(Factuurnummer, "00000")
 
 Final:
         If (sht.ProtectContents = False) Then
-            sht.Protect(Password:=CoCoCo_Invoicing.password, AllowSorting:=True, AllowFiltering:=True)
+            sht.Protect(Password:=GlobalValues.password, AllowSorting:=True, AllowFiltering:=True)
         End If
 
     End Function
 
-    Private Sub Open_excel()
+#Region "IDisposable Support"
+    Private disposedValue As Boolean ' To detect redundant calls
 
-        ObjExcel = CreateObject("Excel.Application")
-        Workbook = ObjExcel.Workbooks.Open(Filename:=Excel)
+    ' IDisposable
+    Protected Overridable Sub Dispose(disposing As Boolean)
+        If Not disposedValue Then
+            If disposing Then
+                inputInvoice.Dispose()
+            End If
 
-        If True = Workbook.ReadOnly Then
-            Workbook.Close
+            ' TODO: free unmanaged resources (unmanaged objects) and override Finalize() below.
+            ' TODO: set large fields to null.
         End If
-
+        disposedValue = True
     End Sub
 
-    Private Sub Close_excel()
-        Workbook.Close(SaveChanges:=True)
+    ' TODO: override Finalize() only if Dispose(disposing As Boolean) above has code to free unmanaged resources.
+    'Protected Overrides Sub Finalize()
+    '    ' Do not change this code.  Put cleanup code in Dispose(disposing As Boolean) above.
+    '    Dispose(False)
+    '    MyBase.Finalize()
+    'End Sub
+
+    ' This code added by Visual Basic to correctly implement the disposable pattern.
+    Public Sub Dispose() Implements IDisposable.Dispose
+        ' Do not change this code.  Put cleanup code in Dispose(disposing As Boolean) above.
+        Dispose(True)
+        ' TODO: uncomment the following line if Finalize() is overridden above.
+        ' GC.SuppressFinalize(Me)
     End Sub
+#End Region
+
 
 End Class

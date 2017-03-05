@@ -34,11 +34,9 @@ Public Class Erelonen
     Dim Provisies_erelonen, Provisies_GerechtsKosten As Double
     Dim Derden, btw, Totaal, Subtotaal As Double
     Dim Amount_Schemas As Integer
-    Dim ObjExcel As Excel.Application
-    Dim ExWb As Workbook
+    Dim ExWb As Workbook = GlobalValues.GetWorkbook()
     Dim gerechtskosten As str_gerechtskosten
     Dim Erelonen_bureelkosten As str_Erelonen_bureelkosten
-    Private ExcelFileName As String = "i:\advogenk\klantenboek.xlsx"
 
     Private Function readFile() As Boolean
         Dim FileName As String
@@ -168,42 +166,6 @@ End_Routine:
 end_of_function:
     End Function
 
-    Private Function OpenExcel() As Boolean
-        ObjExcel = CreateObject("Excel.Application")
-        On Error GoTo ErrorHandler
-        ExWb = ObjExcel.Workbooks.Open(Filename:=ExcelFileName)
-
-        If True = ExWb.ReadOnly Then
-            ExWb.Close()
-            OpenExcel = False
-        Else
-            OpenExcel = True
-        End If
-        Exit Function
-
-ErrorHandler:
-        OpenExcel = False
-    End Function
-
-    Private Function CloseExcel(Optional ByVal Write_On_Save As Boolean = True) As Boolean
-
-        On Error GoTo ErrorHandler
-        ' Close Excel bits
-        ExWb.Close(SaveChanges:=Write_On_Save)
-        ExWb = Nothing
-
-        CloseExcel = True
-
-        Exit Function
-
-ErrorHandler:
-        On Error Resume Next
-        CloseExcel = False
-        ExWb.Close(SaveChanges:=False)
-        ExWb.Quit
-
-    End Function
-
     Private Function ReadFromExcel() As Boolean
         Dim Lst As ListRows
         Dim sht As Worksheet
@@ -222,7 +184,7 @@ ErrorHandler:
         '------------------
         sht = ExWb.Sheets("Kostenschemas")
         tbl = sht.ListObjects("Kostenschema")
-        sht.Unprotect(Password:=CoCoCo_Invoicing.password)
+        sht.Unprotect(Password:=GlobalValues.password)
 
         'remove the autofilter is necessairy
         tbl.AutoFilter.ShowAllData()
@@ -247,7 +209,7 @@ ErrorHandler:
         Next
         'Remove the autofilter
         tbl.AutoFilter.ShowAllData()
-        sht.Protect(Password:=CoCoCo_Invoicing.password, AllowSorting:=True, AllowFiltering:=True)
+        sht.Protect(Password:=GlobalValues.password, AllowSorting:=True, AllowFiltering:=True)
 
 
         '------------------------------------------------------
@@ -257,7 +219,7 @@ ErrorHandler:
         sht = ExWb.Sheets("Provisies")
         tbl = sht.ListObjects("Provisie_Table")
         Lst = tbl.ListRows
-        sht.Unprotect(Password:=CoCoCo_Invoicing.password)
+        sht.Unprotect(Password:=GlobalValues.password)
 
         REM remove the autofilter is necessairy
         tbl.AutoFilter.ShowAllData()
@@ -278,13 +240,13 @@ ErrorHandler:
         REM Provisies1_erelonen = Provisies_Erelonen_ExVAT + Provisies_Erelonen_VAT
         REM Tbl.AutoFilter.ShowAllData
 
-        sht.Protect(Password:=CoCoCo_Invoicing.password, AllowSorting:=True, AllowFiltering:=True)
+        sht.Protect(Password:=GlobalValues.password, AllowSorting:=True, AllowFiltering:=True)
 
         ReadFromExcel = True
         Exit Function
 
 ErrorHandler:
-        sht.Protect(Password:=CoCoCo_Invoicing.password, AllowSorting:=True, AllowFiltering:=True)
+        sht.Protect(Password:=GlobalValues.password, AllowSorting:=True, AllowFiltering:=True)
         ReadFromExcel = False
     End Function
 
@@ -510,7 +472,7 @@ ErrorHandler:
         On Error GoTo ErrorHandler
 
         sht = ExWb.Sheets("Ereloon Nota")
-        sht.Unprotect(Password:=CoCoCo_Invoicing.password)
+        sht.Unprotect(Password:=GlobalValues.password)
         tbl = sht.ListObjects("Ereloon_Nota_Table")
         Lst = tbl.ListRows
 
@@ -550,7 +512,7 @@ ErrorHandler:
             .Range(31).Value = OGMCode
         End With
 
-        sht.Protect(Password:=CoCoCo_Invoicing.password, AllowSorting:=True, AllowFiltering:=True)
+        sht.Protect(Password:=GlobalValues.password, AllowSorting:=True, AllowFiltering:=True)
 
         InsertInExcel = True
 
@@ -558,21 +520,21 @@ ErrorHandler:
         sht = ExWb.Sheets("Provisies")
         tbl = sht.ListObjects("Provisie_Table")
         Lst = tbl.ListRows
-        sht.Unprotect(Password:=CoCoCo_Invoicing.password)
+        sht.Unprotect(Password:=GlobalValues.password)
 
         REM remove the autofilter is necessairy
-        tbl.AutoFilter.ShowAllData
+        tbl.AutoFilter.ShowAllData()
         tbl.Range.AutoFilter(Field:=3, Criteria1:=dossierNr)
-        tbl.AutoFilter.ApplyFilter
+        tbl.AutoFilter.ApplyFilter()
 
         rng = tbl.DataBodyRange.SpecialCells(XlCellType.xlCellTypeVisible)
         For Each row In rng.Rows
-            row.Cells(tbl.ListColumns("betaald").index) = True
+            row.Cells(tbl.ListColumns("betaald").Index) = True
         Next row
 
         REM remove the autofilter is necessairy
-        tbl.AutoFilter.ShowAllData
-        sht.Protect(Password:=CoCoCo_Invoicing.password, AllowSorting:=True, AllowFiltering:=True)
+        tbl.AutoFilter.ShowAllData()
+        sht.Protect(Password:=GlobalValues.password, AllowSorting:=True, AllowFiltering:=True)
 
         Exit Function
 
@@ -587,31 +549,23 @@ ErrorHandler:
         If Not readFile() Then
             error_text = "CSV file not read"
             GoTo Exit_error
-        ElseIf Not OpenExcel() Then
-            error_text = "Error opening Excel"
-            GoTo Exit_error
         ElseIf Not ReadFromExcel() Then
             error_text = "Error reading from Excel"
-            CloseExcel()
             GoTo Exit_error
         ElseIf Not requestInputs() Then
             error_text = "Error in Form"
-            CloseExcel()
             GoTo Exit_error
         Else
-            OGMCode = CoCoCo_Invoicing.CoCoCo_Calculate_OGM(dossierNr, ExWb)
+            OGMCode = GlobalValues.CoCoCo_Calculate_OGM(dossierNr)
             If Not InsertInExcel() Then
                 error_text = "Error inserting in excel"
-                CloseExcel()
                 GoTo Exit_error
             ElseIf Not insert_text() Then
                 error_text = "Error inserting text"
-                CloseExcel(Write_On_Save:=False)
                 GoTo Exit_error
             End If
         End If
 
-        CloseExcel()
         main = True
         Exit Function
 
