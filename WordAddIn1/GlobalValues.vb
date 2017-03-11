@@ -12,7 +12,7 @@ Public Class GlobalValues
     Public Shared ReadOnly NumberFormat = "€ ## ##0.00;[RED]€ -## ##0.00;-"
     Public Shared ReadOnly invoiceTemplate = "C:\Users\krisc\OneDrive\Documents\01. CoCoCo\ImagoInvest\Factuur.dotx"
     Public Shared ReadOnly ExcelFileName = "C:\Users\krisc\OneDrive\Documents\01. CoCoCo\ImagoInvest\klantenboek.xlsx"
-
+    Public Shared ReadOnly InvoicePath = "C:\Users\krisc\OneDrive\Documents\01. CoCoCo\FA"
 
     Private Sub New()
         InitializeComponent()

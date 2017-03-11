@@ -691,7 +691,7 @@ End_:
         Document.PrintPreview()
         MsgBox("Kijk de factuur na")
 
-        Document.SaveAs2(FileName:="i:\facturen\fa" + Factuurnummer)
+        Document.SaveAs2(FileName:=GlobalValues.InvoicePath + Factuurnummer)
         objWord.ActivePrinter = "Standaard"
         Document.PrintOut(Background:=True)
         objWord.ActivePrinter = "Standaard"
