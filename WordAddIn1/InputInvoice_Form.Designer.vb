@@ -76,7 +76,7 @@ Partial Class InputInvoice_Form
         Me.OGM_exit.Location = New System.Drawing.Point(264, 82)
         Me.OGM_exit.Name = "OGM_exit"
         Me.OGM_exit.Size = New System.Drawing.Size(82, 23)
-        Me.OGM_exit.TabIndex = 4
+        Me.OGM_exit.TabIndex = 5
         Me.OGM_exit.Text = "EXIT"
         Me.OGM_exit.UseVisualStyleBackColor = True
         '

@@ -101,20 +101,26 @@ ErrorHandler:
     End Function
 
     Private Shared Sub Open_excel()
-        If ExcelApp Is Nothing Then
+        'If no ExcelApp exist, create a new one.
+        Try
+            If IsNothing(ExcelApp.Workbooks) Then
+            End If
+        Catch
+            ExcelApp = Nothing
+            GC.Collect()
             ExcelApp = CreateObject("Excel.Application")
-        End If
+        End Try
         ExcelWB = ExcelApp.Workbooks.Open(Filename:=ExcelFileName)
 
         If True = ExcelWB.ReadOnly Then
             ExcelWB.Close()
             Throw New IO.FileLoadException()
         End If
-
     End Sub
 
     Private Shared Sub Close_excel()
         ExcelWB.Close(SaveChanges:=True)
+        ExcelWB = Nothing
     End Sub
 
     Protected Overridable Sub Dispose(ByVal disposing As Boolean)

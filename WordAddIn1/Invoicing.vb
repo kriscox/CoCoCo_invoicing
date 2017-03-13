@@ -168,7 +168,13 @@ Public Class Invoicing
                     gerechtskostenFct = rest_costs
                     Amount = Amount - rest_costs
                     REM devide the rest over wages and BTW
+                    ' BTW recalculate to check the rounding.
                     wages = Math.Round(Amount / 1.21, 2)
+                    If (wages * 1.21 > Amount) Then
+                        wages = wages - 0.01
+                    ElseIf (wages * 1.21 < Amount) Then
+                        wages = wages + 0.01
+                    End If
                     ogm_Record.Cells(1, 15).text = ogm_Record.Cells(1, 15).text + wages
                     ogm_Record.Cells(1, 16).text = ogm_Record.Cells(1, 16).text + Amount - wages
                     Workbook1.Sheets("Provisies").Protect(Password:=GlobalValues.password, AllowSorting:=True, AllowFiltering:=True)
@@ -340,6 +346,7 @@ Final:
         End If
 
     End Function
+
     Private Sub UpdateRecord()
         Dim searchSheet As Worksheet
         Dim SearchTable As ListObject
@@ -403,6 +410,7 @@ Final:
         If (searchSheet.ProtectContents = False) Then
             searchSheet.Protect(Password:=GlobalValues.password, AllowSorting:=True, AllowFiltering:=True)
         End If
+
     End Sub
 
     Private Function getSaldo() As Double
@@ -549,6 +557,7 @@ ErrorHandler:
 
 Add_Row_:
         REM add a new provision for the rest
+        tbl.AutoFilter.ShowAllData()
         With Lst.Add.Range
             .Cells(1) = Now
             For i = 2 To 8
@@ -557,13 +566,11 @@ Add_Row_:
 
             If ogm_Record.Columns.Count > 30 Then
                 REM Eindnota
-
-                tbl.AutoFilter.ShowAllData()
                 tbl.Range.AutoFilter(Field:=3, Criteria1:=ogm_Record.Cells(3))
                 tbl.AutoFilter.ApplyFilter()
                 gerechtskosten = ogm_Record.Cells(21).Value2 + ogm_Record.Cells(22).Value2 + ogm_Record.Cells(23).Value2 _
-                + ogm_Record.Cells(24).Value2 + ogm_Record.Cells(25).Value2 -
-                tbl.TotalsRowRange.Cells(1, tbl.ListColumns("gerechtskosten_betaald").Index).text
+                    + ogm_Record.Cells(24).Value2 + ogm_Record.Cells(25).Value2 -
+                    tbl.TotalsRowRange.Cells(1, tbl.ListColumns("gerechtskosten_betaald").Index).text
             Else
                 gerechtskosten = 0
             End If
@@ -575,14 +582,14 @@ Add_Row_:
                 ereloon = (Amount - gerechtskosten) / 1.21
             End If
 
-            .Cells(tbl.ListColumns("Ereloon").Index).text = ereloon
-            .Cells(tbl.ListColumns("BTW").Index).text = ereloon * 0.21
-            .Cells(tbl.ListColumns("Ereloon_betaald").Index).text = ereloon
-            .Cells(tbl.ListColumns("BTW_betaald").Index).text = ereloon * 0.21
-            .Cells(tbl.ListColumns("totaal").Index).text = Amount
-            .Cells(tbl.ListColumns("betaald").Index).text = True
-            .Cells(tbl.ListColumns("gerechtskosten").Index).text = gerechtskosten
-            .Cells(tbl.ListColumns("gerechtskosten_betaald").Index).text = gerechtskosten
+            .Cells(tbl.ListColumns("Ereloon").Index).value = ereloon
+            .Cells(tbl.ListColumns("BTW").Index).value = ereloon * 0.21
+            .Cells(tbl.ListColumns("Ereloon_betaald").Index).value = ereloon
+            .Cells(tbl.ListColumns("BTW_betaald").Index).value = ereloon * 0.21
+            .Cells(tbl.ListColumns("totaal").Index).value = Amount
+            .Cells(tbl.ListColumns("betaald").Index).value = True
+            .Cells(tbl.ListColumns("gerechtskosten").Index).value = gerechtskosten
+            .Cells(tbl.ListColumns("gerechtskosten_betaald").Index).value = gerechtskosten
 
             ereloonFct = ereloonFct + ereloon
             gerechtskostenFct = gerechtskostenFct + gerechtskosten
@@ -653,7 +660,7 @@ End_:
 
         With table.Rows.Add
             .Cells(2).Range.InsertAfter(Text:="Subtotaal Btw")
-            .Cells(3).Range.InsertAfter(Text:=Format(Expression:=subtotal_ExVAT * 0.21 - Prov_BTW, Style:=GlobalValues.NumberFormat))
+            .Cells(3).Range.InsertAfter(Text:=Format(Expression:=(Math.Round(subtotal_ExVAT * 1.21, 2) - subtotal_ExVAT) - Prov_BTW, Style:=GlobalValues.NumberFormat))
             .Range.ParagraphFormat.KeepWithNext = True
         End With
 
@@ -690,6 +697,7 @@ End_:
         objWord.Visible = True
         Document.PrintPreview()
         MsgBox("Kijk de factuur na")
+        Workbook1.Close(SaveChanges:=vbYes)
 
         Document.SaveAs2(FileName:=GlobalValues.InvoicePath + Factuurnummer)
         objWord.ActivePrinter = "Standaard"
@@ -717,7 +725,7 @@ closeWord:
         On Error GoTo Final
 
         'Create document
-        objWord = CreateObject("Word.Application")
+        objWord = GetObject(, "Word.Application")
         Document = objWord.Documents.Add(Template:=GlobalValues.invoiceTemplate, Visible:=True)
 
         'Fill header
@@ -755,7 +763,7 @@ closeWord:
 
             With table.Rows.Add
                 .Cells(2).Range.InsertAfter(Text:="Subtotaal Btw")
-                .Cells(3).Range.InsertAfter(Text:=Format(Expression:=subtotal_ExVAT * 0.21, Style:=GlobalValues.NumberFormat))
+                .Cells(3).Range.InsertAfter(Text:=Format(Expression:=Math.Round(subtotal_ExVAT * 1.21, 2) - subtotal_ExVAT, Style:=GlobalValues.NumberFormat))
                 .Range.ParagraphFormat.KeepWithNext = True
             End With
         End If
@@ -802,8 +810,9 @@ Final:
         objWord.Visible = True
         Document.PrintPreview()
         MsgBox("Kijk de factuur na")
+        Workbook1.Close(SaveChanges:=vbYes)
 
-        Document.SaveAs2(FileName:="i:\facturen\fa" + Factuurnummer)
+        Document.SaveAs2(FileName:=GlobalValues.InvoicePath + Factuurnummer)
         objWord.ActivePrinter = "Standaard"
         Document.PrintOut(Background:=True)
         objWord.ActivePrinter = "Standaard"
@@ -815,10 +824,8 @@ Final:
         End If
 closeWord:
         objWord = Nothing
+        globalvalues.Dispose()
     End Sub
-
-    REM checked
-
 
     REM checked
     Private Sub AddTitleRow(ByRef row As Row, ByVal title As String)
@@ -861,8 +868,8 @@ closeWord:
                                                            ogm_Record.Cells(1, 7).Value & vbCr &
                                                            ogm_Record.Cells(1, 8).Value
         Document.CustomDocumentProperties("FactuurNummer").Value = Factuurnummer
-        Document.CustomDocumentProperties("FactuurDatum").Value = Format(Expression:=Now, Style:="d mmmm yyyy")
-        Document.CustomDocumentProperties("Vervaldatum").Value = Format(Expression:=DateAdd(Interval:=DateInterval.Month, Number:=1.0, DateValue:=Now), Style:="d mmmm yyyy")
+        Document.CustomDocumentProperties("FactuurDatum").Value = Format(Expression:=Now, Style:="d MMMM yyyy")
+        Document.CustomDocumentProperties("Vervaldatum").Value = Format(Expression:=DateAdd(Interval:=DateInterval.Month, Number:=1.0, DateValue:=Now), Style:="d MMMM yyyy")
         Document.CustomDocumentProperties("Dossier").Value = ogm_Record.Cells(1, 4).Value
         Document.CustomDocumentProperties("DossierNummer").Value = ogm_Record.Cells(1, 3).Value
 
@@ -1343,8 +1350,8 @@ Final:
         sht = Workbook1.Sheets("Parameters")
         sht.Unprotect(Password:=GlobalValues.password)
 
-        Factuurnummer = Workbook1.Names("FactuurNummer").RefersToRange.Cells(1).Value
-        Workbook1.Names("FactuurNummer").RefersToRange.Cells(1) = Factuurnummer + 1
+        Factuurnummer = sht.Range("FactuurNummer").Cells(1).Value
+        sht.Range("FactuurNummer").Cells(1).Value = Factuurnummer + 1
 
         NextInvoiceNumber = Format(Year(Now()), "0000") & Format(Factuurnummer, "00000")
 
@@ -1364,7 +1371,7 @@ Final:
             If disposing Then
                 inputInvoice.Dispose()
             End If
-
+            GC.Collect()
             ' TODO: free unmanaged resources (unmanaged objects) and override Finalize() below.
             ' TODO: set large fields to null.
         End If

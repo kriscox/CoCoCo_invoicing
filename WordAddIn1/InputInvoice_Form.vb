@@ -22,6 +22,12 @@
         Me.Tag = "OGM_EXIT"
         Me.Hide()
     End Sub
+
+    Private Sub InputInvoice_Form_Load(sender As Object, e As EventArgs) Handles Me.Load
+        Me.AcceptButton = OGM_ok
+        Me.CancelButton = OGM_exit
+    End Sub
+
     Public Function check_omg(ByVal omg_code1 As String, ByVal omg_code2 As String, ByVal omg_code3 As String) As Boolean
         Dim rest, check As Double
 
@@ -33,4 +39,6 @@
 
         check_omg = (rest = check)
     End Function
+
+
 End Class

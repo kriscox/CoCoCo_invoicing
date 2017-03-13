@@ -3,6 +3,8 @@ Imports System.Windows
 
 Public Class Payment
     Dim culture As CultureInfo = CultureInfo.CurrentCulture
+
+
     Private Sub Field_Validate(sender As Object, e As ComponentModel.CancelEventArgs) Handles MyBase.Validating
         Dim faultSeparator As String
         Dim decimalSeparator As String = Globalization.CultureInfo.CurrentCulture.NumberFormat.NumberDecimalSeparator
@@ -58,4 +60,10 @@ ErrorHandler:
         Me.Payment_amount.Text = ""
 
     End Sub
+
+    Private Sub Payment_Load(sender As Object, e As EventArgs) Handles Me.Load
+        Me.AcceptButton = Payment_ok
+        Me.CancelButton = payment_cancel
+    End Sub
+
 End Class

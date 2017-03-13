@@ -28,6 +28,8 @@ Partial Class Payment
         Me.Payment_amount = New System.Windows.Forms.TextBox()
         Me.Payment_ok = New System.Windows.Forms.Button()
         Me.payment_cancel = New System.Windows.Forms.Button()
+        Me.Label2 = New System.Windows.Forms.Label()
+        Me.Label3 = New System.Windows.Forms.Label()
         Me.SuspendLayout()
         '
         'ogm_label
@@ -37,7 +39,7 @@ Partial Class Payment
             Or System.Windows.Forms.AnchorStyles.Right), System.Windows.Forms.AnchorStyles)
         Me.ogm_label.AutoSize = True
         Me.ogm_label.Font = New System.Drawing.Font("Trebuchet MS", 12.0!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.ogm_label.Location = New System.Drawing.Point(19, 19)
+        Me.ogm_label.Location = New System.Drawing.Point(88, 19)
         Me.ogm_label.Name = "ogm_label"
         Me.ogm_label.Size = New System.Drawing.Size(0, 22)
         Me.ogm_label.TabIndex = 0
@@ -49,7 +51,7 @@ Partial Class Payment
             Or System.Windows.Forms.AnchorStyles.Right), System.Windows.Forms.AnchorStyles)
         Me.Dossier_label.AutoSize = True
         Me.Dossier_label.Font = New System.Drawing.Font("Trebuchet MS", 12.0!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.Dossier_label.Location = New System.Drawing.Point(19, 77)
+        Me.Dossier_label.Location = New System.Drawing.Point(88, 77)
         Me.Dossier_label.Name = "Dossier_label"
         Me.Dossier_label.Size = New System.Drawing.Size(0, 22)
         Me.Dossier_label.TabIndex = 0
@@ -72,7 +74,7 @@ Partial Class Payment
         Me.Payment_amount.Anchor = CType((((System.Windows.Forms.AnchorStyles.Top Or System.Windows.Forms.AnchorStyles.Bottom) _
             Or System.Windows.Forms.AnchorStyles.Left) _
             Or System.Windows.Forms.AnchorStyles.Right), System.Windows.Forms.AnchorStyles)
-        Me.Payment_amount.Location = New System.Drawing.Point(84, 138)
+        Me.Payment_amount.Location = New System.Drawing.Point(88, 138)
         Me.Payment_amount.Name = "Payment_amount"
         Me.Payment_amount.Size = New System.Drawing.Size(269, 20)
         Me.Payment_amount.TabIndex = 1
@@ -97,9 +99,35 @@ Partial Class Payment
         Me.payment_cancel.Location = New System.Drawing.Point(249, 193)
         Me.payment_cancel.Name = "payment_cancel"
         Me.payment_cancel.Size = New System.Drawing.Size(75, 23)
-        Me.payment_cancel.TabIndex = 2
+        Me.payment_cancel.TabIndex = 3
         Me.payment_cancel.Text = "Annuleren"
         Me.payment_cancel.UseVisualStyleBackColor = True
+        '
+        'Label2
+        '
+        Me.Label2.Anchor = CType((((System.Windows.Forms.AnchorStyles.Top Or System.Windows.Forms.AnchorStyles.Bottom) _
+            Or System.Windows.Forms.AnchorStyles.Left) _
+            Or System.Windows.Forms.AnchorStyles.Right), System.Windows.Forms.AnchorStyles)
+        Me.Label2.AutoSize = True
+        Me.Label2.Font = New System.Drawing.Font("Trebuchet MS", 12.0!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
+        Me.Label2.Location = New System.Drawing.Point(12, 19)
+        Me.Label2.Name = "Label2"
+        Me.Label2.Size = New System.Drawing.Size(43, 22)
+        Me.Label2.TabIndex = 0
+        Me.Label2.Text = "OGM"
+        '
+        'Label3
+        '
+        Me.Label3.Anchor = CType((((System.Windows.Forms.AnchorStyles.Top Or System.Windows.Forms.AnchorStyles.Bottom) _
+            Or System.Windows.Forms.AnchorStyles.Left) _
+            Or System.Windows.Forms.AnchorStyles.Right), System.Windows.Forms.AnchorStyles)
+        Me.Label3.AutoSize = True
+        Me.Label3.Font = New System.Drawing.Font("Trebuchet MS", 12.0!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
+        Me.Label3.Location = New System.Drawing.Point(12, 77)
+        Me.Label3.Name = "Label3"
+        Me.Label3.Size = New System.Drawing.Size(77, 22)
+        Me.Label3.TabIndex = 0
+        Me.Label3.Text = "DossierNr"
         '
         'Payment
         '
@@ -109,6 +137,8 @@ Partial Class Payment
         Me.Controls.Add(Me.payment_cancel)
         Me.Controls.Add(Me.Payment_ok)
         Me.Controls.Add(Me.Payment_amount)
+        Me.Controls.Add(Me.Label2)
+        Me.Controls.Add(Me.Label3)
         Me.Controls.Add(Me.Label1)
         Me.Controls.Add(Me.Dossier_label)
         Me.Controls.Add(Me.ogm_label)
@@ -125,4 +155,6 @@ Partial Class Payment
     Friend WithEvents Payment_amount As Windows.Forms.TextBox
     Friend WithEvents Payment_ok As Windows.Forms.Button
     Friend WithEvents payment_cancel As Windows.Forms.Button
+    Friend WithEvents Label2 As Windows.Forms.Label
+    Friend WithEvents Label3 As Windows.Forms.Label
 End Class
