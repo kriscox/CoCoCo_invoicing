@@ -36,7 +36,7 @@ Public Class Invoicing_ribbon
 
     Public Sub Provisie_nota_button(ByVal control As Office.IRibbonControl)
         Dim provisie As Provisie = New Provisie
-        provisie.main()
+        provisie.Main()
     End Sub
 
     Public Sub Ereloon_nota_button(ByVal control As Office.IRibbonControl)

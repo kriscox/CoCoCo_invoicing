@@ -18,8 +18,22 @@
         End If
     End Sub
 
-    Private Sub OGM_exit_Click(sender As Object, e As EventArgs) Handles OGM_exit.Click
-        Me.Tag = "OGM_EXIT"
+    Private Sub Dossier_ok_Click(sender As Object, e As EventArgs) Handles  Dossier_ok.Click
+        REM check if all fields are complete
+        If Len(Dossier_year.Text) <> 4 Then
+            MsgBox(Prompt:="Eerste deel moet uit 4 cijfers bestaan")
+        ElseIf Len(Dossier_nr.Text) <> 4 Then
+            MsgBox(Prompt:="Tweede deel moet uit 4 cijfers bestaan")
+        ElseIf Len(Dossier_nr2.Text) <> 1 Then
+            MsgBox(Prompt:="Derde deel moet uit 1 cijfer bestaan")
+        Else
+            Me.Tag = "Dossier_OK"
+            Me.Hide()
+        End If
+    End Sub
+
+    Private Sub OGM_exit_Click(sender As Object, e As EventArgs) Handles OGM_exit.Click, Dossier_exit.Click
+        Me.Tag = "EXIT"
         Me.Hide()
     End Sub
 
@@ -39,6 +53,5 @@
 
         check_omg = (rest = check)
     End Function
-
 
 End Class

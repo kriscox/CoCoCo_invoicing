@@ -43,7 +43,7 @@ Public Class GlobalValues
         GetWorkbook = ExcelWB
     End Function
 
-    Public Shared Function CoCoCo_Calculate_OGM(ByVal dossierNr As String) As String
+    Public Shared Function CoCoCo_Calculate_OGM(ByVal dossierNr As String, Optional ByVal derdenGelden As Boolean = False) As String
         Dim tbl As ListObject
         Dim Lst As ListRows
         Dim sht As Worksheet
@@ -53,33 +53,52 @@ Public Class GlobalValues
         '------------------------------------------------------
         'Calculate ogm code
         '----------------------
-        sht = ExcelWB.Sheets("Ereloon Nota")
+        If (Not derdenGelden) Then
+            sht = ExcelWB.Sheets("Ereloon Nota")
+            tbl = sht.ListObjects("Ereloon_Nota_Table")
+            Lst = tbl.ListRows
+            sht.Unprotect(Password:=password)
 
-        tbl = sht.ListObjects("Ereloon_Nota_Table")
-        Lst = tbl.ListRows
-        sht.Unprotect(Password:=password)
+            REM remove the autofilter is necessairy
+            tbl.AutoFilter.ShowAllData()
+            tbl.Range.AutoFilter(Field:=3, Criteria1:=dossierNr)
+            tbl.AutoFilter.ApplyFilter()
 
-        REM remove the autofilter is necessairy
-        tbl.AutoFilter.ShowAllData()
-        tbl.Range.AutoFilter(Field:=3, Criteria1:=dossierNr)
-        tbl.AutoFilter.ApplyFilter()
+            CountDossier = sht.Evaluate("=Ereloon_Nota_Table[[#Totals],[dossiernr]]")
+            tbl.AutoFilter.ShowAllData()
+            sht.Protect(Password:=password, AllowSorting:=True, AllowFiltering:=True)
 
-        CountDossier = sht.Evaluate("=Ereloon_Nota_Table[[#Totals],[dossiernr]]")
-        tbl.AutoFilter.ShowAllData()
-        sht.Protect(Password:=password, AllowSorting:=True, AllowFiltering:=True)
+            sht = ExcelWB.Sheets("Provisies")
+            tbl = sht.ListObjects("Provisie_Table")
+            Lst = tbl.ListRows
+            sht.Unprotect(Password:=password)
 
-        sht = ExcelWB.Sheets("Provisies")
-        tbl = sht.ListObjects("Provisie_Table")
-        Lst = tbl.ListRows
-        sht.Unprotect(Password:=password)
+            REM remove the autofilter is necessairy
+            tbl.AutoFilter.ShowAllData()
+            tbl.Range.AutoFilter(Field:=3, Criteria1:=dossierNr)
+            tbl.AutoFilter.ApplyFilter()
+            CountDossier = CountDossier + sht.Evaluate("=Provisie_Table[[#Totals],[dossiernr]]")
+            If (CountDossier >= 299) Then
+                Throw New IndexOutOfRangeException("Aantal OGM waarden is te groot (> 299)")
+            End If
+            tbl.AutoFilter.ShowAllData()
+            sht.Protect(Password:=password, AllowSorting:=True, AllowFiltering:=True)
+        Else
+            sht = ExcelWB.Sheets("DerdenGelden")
+            tbl = sht.ListObjects("Derden_Gelden_Table")
+            Lst = tbl.ListRows
+            sht.Unprotect(Password:=password)
 
-        REM remove the autofilter is necessairy
-        tbl.AutoFilter.ShowAllData()
-        tbl.Range.AutoFilter(Field:=3, Criteria1:=dossierNr)
-        tbl.AutoFilter.ApplyFilter()
-        CountDossier = CountDossier + sht.Evaluate("=Provisie_Table[[#Totals],[dossiernr]]")
-        tbl.AutoFilter.ShowAllData()
-        sht.Protect(Password:=password, AllowSorting:=True, AllowFiltering:=True)
+            REM remove the autofilter is necessairy
+            tbl.AutoFilter.ShowAllData()
+            tbl.Range.AutoFilter(Field:=3, Criteria1:=dossierNr)
+            tbl.AutoFilter.ApplyFilter()
+
+            CountDossier = sht.Evaluate("=Derden_Gelden_Table[[#Totals],[dossiernr]]")
+            CountDossier += 300 'Derden gelden OGM beginnen het derde deel met 3
+            tbl.AutoFilter.ShowAllData()
+            sht.Protect(Password:=password, AllowSorting:=True, AllowFiltering:=True)
+        End If
 
         Dim Serial_Number As Integer
         Dim List As String()

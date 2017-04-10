@@ -1,6 +1,7 @@
 ﻿Imports Microsoft.Office.Interop.Excel
 
 Public Class Kostenschema
+#Region "Variables"
     Property prestaties As Double
     Property wacht As Double
     Property verplaatsing As Double
@@ -8,6 +9,8 @@ Public Class Kostenschema
     Property fotokopie As Double
     Property dactylo As Double
     Property index As Integer
+    Property VAT As Double
+#End Region
 
     Public Sub New(index As Integer)
         index = index
@@ -30,11 +33,12 @@ Public Class Kostenschema
             Return
         End If
 
-        dactylo = table.ListColumns("Dactylo").DataBodyRange(rownum).Text
-        fotokopie = table.ListColumns("fotokopie").DataBodyRange(rownum).Text
-        mail = table.ListColumns("mail").DataBodyRange(rownum).Text
-        prestaties = table.ListColumns("Prestatie").DataBodyRange(rownum).Text
-        verplaatsing = table.ListColumns("verplaatsing").DataBodyRange(rownum).Text
-        wacht = table.ListColumns("Wacht").DataBodyRange(rownum).Text
+        dactylo = table.ListColumns("Dactylo").DataBodyRange(rownum).Value
+        fotokopie = table.ListColumns("fotokopie").DataBodyRange(rownum).Value
+        mail = table.ListColumns("mail").DataBodyRange(rownum).Value
+        prestaties = table.ListColumns("Prestatie").DataBodyRange(rownum).Value
+        verplaatsing = table.ListColumns("verplaatsing").DataBodyRange(rownum).Value
+        wacht = table.ListColumns("wacht").DataBodyRange(rownum).Value
+        VAT = table.ListColumns("BTW").DataBodyRange(rownum).Value
     End Sub
 End Class

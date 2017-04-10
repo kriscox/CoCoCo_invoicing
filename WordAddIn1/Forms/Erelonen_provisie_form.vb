@@ -3,6 +3,7 @@ Imports System.Windows
 
 Public Class Erelonen_provisie_form
     Dim culture As CultureInfo = CultureInfo.CurrentCulture
+    Dim BTW As Double = 0.21
 
     Public Sub New()
 
@@ -41,7 +42,7 @@ Public Class Erelonen_provisie_form
 
     Private Sub Field_Validated(sender As Object, e As EventArgs) Handles Gerecht_input.Validated, Erelonen_input.Validated
 
-        Erelonen_btw.Text = FormatCurrency(CDbl(Erelonen_input.Text) * 0.21)
+        Erelonen_btw.Text = FormatCurrency(CDbl(Erelonen_input.Text) * BTW)
         Erelonen_totaal.Text = FormatCurrency(CDbl(Erelonen_input.Text) + CDbl(Erelonen_btw.Text))
         Gerecht_totaal.Text = FormatCurrency(CDbl(Gerecht_input.Text))
         If IsNumeric(Gerecht_input.Text) Then
@@ -67,4 +68,17 @@ Fault:
         Throw New NotImplementedException()
     End Sub
 
+    Private Sub IC_CheckedChanged(sender As Object, e As EventArgs) Handles IC.CheckedChanged
+        On Error GoTo Fault
+        If IC.Checked Then
+            Erelonen_btw.Visible = False
+            BTW = 0
+        Else
+            Erelonen_btw.Visible = True
+            BTW = 0.21
+        End If
+        Field_Validate(sender, e)
+Fault:
+        Throw New NotImplementedException("IC_checkbox exception in provisie form")
+    End Sub
 End Class

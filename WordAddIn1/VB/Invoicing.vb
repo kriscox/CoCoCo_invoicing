@@ -5,10 +5,11 @@ Imports Microsoft.Office.Interop
 Public Class Invoicing
     Implements IDisposable
 
+#Region "Variables"
     Private globalvalues As GlobalValues = GlobalValues.GetInstance()
     Private ogm_Record As Excel.Range
     Private excel_Window As Excel.Window
-    Private Workbook As Workbook = GlobalValues.GetWorkbook()
+    Private Workbook1 As Workbook = GlobalValues.GetWorkbook()
     Private ObjExcel As Excel.Application = GlobalValues.GetExcel()
     Dim dossierNr As String
     Dim inputInvoice As InputInvoice_Form
@@ -19,15 +20,9 @@ Public Class Invoicing
     Dim Factuurnummer As String
     Dim Total As Double
     Dim subtotal_Provisions, Prov_Erelonen, Prov_BTW, Prov_Gerecht As Double
-
-    Public Property Workbook1 As Workbook
-        Get
-            Return Workbook
-        End Get
-        Set(value As Workbook)
-            Workbook = value
-        End Set
-    End Property
+    Dim VAT As Double = 0.21
+    Dim IC As Boolean = False
+#End Region
 
     Public Sub startup()
         inputInvoice = New InputInvoice_Form()
@@ -39,8 +34,11 @@ Public Class Invoicing
 
             Select Case inputInvoice.Tag
 
-            REM Go to the excel
-                Case Is = "TOWORKBOOK"
+            REM Dossier payment
+                Case Is = "Dossier_OK"
+
+
+
 
             REM loop to log a OGM code payment
                 Case Is = "OGM_OK"
@@ -49,7 +47,7 @@ Public Class Invoicing
                     OGM_Payment(ogm)
 
             REM Exit loop
-                Case Is = "OGM_EXIT"
+                Case Is = "EXIT"
                     Exit Sub
                 Case Else
                     REM endless loop
@@ -108,6 +106,14 @@ Public Class Invoicing
             dossierNr = ogm_Record.Cells(3).Value2
             REM Saldo = Saldo - everything already provisioned
             Saldo = Saldo - getSaldo()
+            kostenSchema = New Kostenschema(ogm_Record.Cells(9))
+            VAT = kostenSchema.VAT
+            If (0 = VAT) Then
+                IC = True
+            Else
+                IC = False
+            End If
+
             If Saldo <= Amount Then
 
                 If Saldo < Amount Then
@@ -122,8 +128,7 @@ Public Class Invoicing
                 ogm_Record.Cells(33).Value2 = Now
                 ogm_Record.Cells(34).Value2 = Factuurnummer
                 Workbook1.Sheets("Ereloon Nota").Protect(Password:=GlobalValues.password, AllowSorting:=True, AllowFiltering:=True)
-                'TODO readkostenschem
-                'kostenschema.readKostenSchema(kostenschemaID:=ogm_Record.Cells(9))
+
                 erelonen = erelonen & " " & ogm_Record.Row
                 Fee_invoice()
                 Close_provisions()
@@ -140,6 +145,13 @@ Public Class Invoicing
         Else
             REM remove payed part
             Saldo = Saldo - CDbl(ogm_Record.Cells(15).Value2) - CDbl(ogm_Record.Cells(16).Value2) - CDbl(ogm_Record.Cells(17).Value2)
+            If (True = ogm_Record.Cells(21).Value2) Then
+                VAT = 0
+                IC = True
+            Else
+                VAT = 0.21
+                IC = False
+            End If
 
             REM everything payed close provisie
             If Saldo <= Amount Then
@@ -150,6 +162,7 @@ Public Class Invoicing
                 ogm_Record.Cells(15).Value2 = ogm_Record.Cells(9).Value2
                 ogm_Record.Cells(16).Value2 = ogm_Record.Cells(10).Value2
                 ogm_Record.Cells(17).Value2 = ogm_Record.Cells(11).Value2
+
                 Workbook1.Sheets("Provisies").Protect(Password:=GlobalValues.password, AllowSorting:=True, AllowFiltering:=True)
                 Provisies = "PE" & ogm_Record.Row
                 'Fill rest on other open provisies
@@ -169,10 +182,10 @@ Public Class Invoicing
                     Amount = Amount - rest_costs
                     REM devide the rest over wages and BTW
                     ' BTW recalculate to check the rounding.
-                    wages = Math.Round(Amount / 1.21, 2)
-                    If (wages * 1.21 > Amount) Then
+                    wages = Math.Round(Amount / (1 + VAT), 2)
+                    If (wages * (1 + VAT) > Amount) Then
                         wages = wages - 0.01
-                    ElseIf (wages * 1.21 < Amount) Then
+                    ElseIf (wages * (1 + VAT) < Amount) Then
                         wages = wages + 0.01
                     End If
                     ogm_Record.Cells(1, 15).text = ogm_Record.Cells(1, 15).text + wages
@@ -370,7 +383,7 @@ Final:
             .AutoFilter.ShowAllData()
             .Range.AutoFilter(Field:=3, Criteria1:=ogm_Record.Cells(3))
             REM get all payed Erelonen and provisions
-            ogm_Record.Cells(27).Value2 = .TotalsRowRange.Cells(1, .ListColumns("Ereloon_betaald").Index).text * 1.21
+            ogm_Record.Cells(27).Value2 = .TotalsRowRange.Cells(1, .ListColumns("Ereloon_betaald").Index).text * (1 + VAT)
             ogm_Record.Cells(28).Value2 = .TotalsRowRange.Cells(1, .ListColumns("gerechtskosten_betaald").Index).text
 
             REM calculate open saldo
@@ -532,10 +545,10 @@ ErrorHandler:
                 REM if amount isn't sufficient to fill up, full up with amount and end function
                 REM diff is without 21% VAT
                 Provisies = Provisies & " ES" & row.Row
-                If diff * 1.21 > Amount Then
-                    row.Cells(1, idEreloonPayed).text = row.Cells(1, idEreloonPayed).text + (Amount / 1.21)
-                    row.Cells(1, idVATPayed).text = row.Cells(1, idVATPayed).text + (Amount / 1.21 * 0.21)
-                    ereloonFct = ereloonFct + (Amount / 1.21)
+                If diff * (1 + VAT) > Amount Then
+                    row.Cells(1, idEreloonPayed).text = row.Cells(1, idEreloonPayed).text + (Amount / (1 + VAT))
+                    row.Cells(1, idVATPayed).text = row.Cells(1, idVATPayed).text + (Amount / (1 + VAT) * VAT)
+                    ereloonFct = ereloonFct + (Amount / (1 + VAT))
                     Amount = 0
                     Exit For
                 Else
@@ -543,7 +556,7 @@ ErrorHandler:
                     row.Cells(1, idVATPayed).text = row.Cells(1, idVATToPay).text
                     row.Cells(1, idPayed).text = True
                     ereloonFct = ereloonFct + diff
-                    Amount = Amount - diff * 1.21
+                    Amount = Amount - diff * (1 + VAT)
                     If Amount <= 0 Then
                         Exit For
                     End If
@@ -579,17 +592,18 @@ Add_Row_:
                 gerechtskosten = Amount
                 ereloon = 0
             Else
-                ereloon = (Amount - gerechtskosten) / 1.21
+                ereloon = (Amount - gerechtskosten) / (1 + VAT)
             End If
 
             .Cells(tbl.ListColumns("Ereloon").Index).value = ereloon
-            .Cells(tbl.ListColumns("BTW").Index).value = ereloon * 0.21
+            .Cells(tbl.ListColumns("BTW").Index).value = ereloon * VAT
             .Cells(tbl.ListColumns("Ereloon_betaald").Index).value = ereloon
-            .Cells(tbl.ListColumns("BTW_betaald").Index).value = ereloon * 0.21
+            .Cells(tbl.ListColumns("BTW_betaald").Index).value = ereloon * VAT
             .Cells(tbl.ListColumns("totaal").Index).value = Amount
             .Cells(tbl.ListColumns("betaald").Index).value = True
             .Cells(tbl.ListColumns("gerechtskosten").Index).value = gerechtskosten
             .Cells(tbl.ListColumns("gerechtskosten_betaald").Index).value = gerechtskosten
+            .Cells(tbl.ListColumns("IC").Index).Value = IC
 
             ereloonFct = ereloonFct + ereloon
             gerechtskostenFct = gerechtskostenFct + gerechtskosten
@@ -660,7 +674,7 @@ End_:
 
         With table.Rows.Add
             .Cells(2).Range.InsertAfter(Text:="Subtotaal Btw")
-            .Cells(3).Range.InsertAfter(Text:=Format(Expression:=(Math.Round(subtotal_ExVAT * 1.21, 2) - subtotal_ExVAT) - Prov_BTW, Style:=GlobalValues.NumberFormat))
+            .Cells(3).Range.InsertAfter(Text:=Format(Expression:=(Math.Round(subtotal_ExVAT * (1 + VAT), 2) - subtotal_ExVAT) - Prov_BTW, Style:=GlobalValues.NumberFormat))
             .Range.ParagraphFormat.KeepWithNext = True
         End With
 
@@ -670,7 +684,7 @@ End_:
             .Range.ParagraphFormat.KeepWithNext = True
         End With
 
-        Total = subtotal_ExVAT * 1.21 + subtotal_NoVAT - subtotal_Provisions
+        Total = subtotal_ExVAT * (1 + VAT) + subtotal_NoVAT - subtotal_Provisions
         With table.Rows.Add
             .Cells(2).Range.InsertAfter(Text:="Totaal")
             .Cells(2).Range.ParagraphFormat.Alignment = WdParagraphAlignment.wdAlignParagraphCenter
@@ -763,7 +777,7 @@ closeWord:
 
             With table.Rows.Add
                 .Cells(2).Range.InsertAfter(Text:="Subtotaal Btw")
-                .Cells(3).Range.InsertAfter(Text:=Format(Expression:=Math.Round(subtotal_ExVAT * 1.21, 2) - subtotal_ExVAT, Style:=GlobalValues.NumberFormat))
+                .Cells(3).Range.InsertAfter(Text:=Format(Expression:=Math.Round(subtotal_ExVAT * (1 + VAT), 2) - subtotal_ExVAT, Style:=GlobalValues.NumberFormat))
                 .Range.ParagraphFormat.KeepWithNext = True
             End With
         End If
@@ -780,7 +794,7 @@ closeWord:
             With table.Rows.Add
                 .Cells(2).Range.InsertAfter(Text:="Totaal")
                 .Cells(2).Range.ParagraphFormat.Alignment = WdParagraphAlignment.wdAlignParagraphCenter
-                .Cells(3).Range.InsertAfter(Text:=Format(Expression:=subtotal_ExVAT * 1.21 + subtotal_NoVAT, Style:=GlobalValues.NumberFormat))
+                .Cells(3).Range.InsertAfter(Text:=Format(Expression:=subtotal_ExVAT * (1 + VAT) + subtotal_NoVAT, Style:=GlobalValues.NumberFormat))
                 .Cells(3).Borders(WdBorderType.wdBorderTop).Visible = True
                 .Cells(2).Range.Font.Bold = True
                 .Cells(3).Range.Font.Bold = True
@@ -827,7 +841,6 @@ closeWord:
         globalvalues.Dispose()
     End Sub
 
-    REM checked
     Private Sub AddTitleRow(ByRef row As Row, ByVal title As String)
         With row
             .Cells(1).Range.InsertAfter(Text:=title)
@@ -837,7 +850,6 @@ closeWord:
         End With
     End Sub
 
-    REM checked
     Private Sub AddSubtotal(ByRef table As Table, ByVal Total As Double)
         Dim totalrow As Row
         If Total <> 0 Then
@@ -859,7 +871,6 @@ closeWord:
         End If
     End Sub
 
-    REM Checked
     Private Sub AddHeader(ByRef Document As Document, ByVal Factuurnummer As String)
         On Error Resume Next
 
@@ -877,7 +888,6 @@ closeWord:
         Document.Fields.Update()
     End Sub
 
-    REM Checked
     Private Function AddWages(ByRef table As Table, ByVal kind As String) As Double
         Dim subtotal As Double
         Dim titleRow As Row
@@ -895,8 +905,8 @@ closeWord:
                         .Borders(WdBorderType.wdBorderTop).Visible = False
                         .Cells(1).Range.InsertAfter("- Provisie erelonen:")
                         .Cells(4).Range.InsertAfter(Format(Expression:=ereloonFct, Style:=GlobalValues.NumberFormat))
-                        .Cells(5).Range.InsertAfter(Format(Expression:=ereloonFct * 0.21, Style:=GlobalValues.NumberFormat))
-                        .Cells(6).Range.InsertAfter(Format(Expression:=ereloonFct * 1.21, Style:=GlobalValues.NumberFormat))
+                        .Cells(5).Range.InsertAfter(Format(Expression:=ereloonFct * VAT, Style:=GlobalValues.NumberFormat))
+                        .Cells(6).Range.InsertAfter(Format(Expression:=ereloonFct * (1 + VAT), Style:=GlobalValues.NumberFormat))
                         .Range.ParagraphFormat.KeepWithNext = True
                         subtotal = subtotal + ereloonFct
                     End With
@@ -917,8 +927,8 @@ closeWord:
                                                 ":" & Format(Expression:=pMinutes, Style:="00"))
                         .Cells(3).Range.InsertAfter(Format(Expression:=kostenSchema.prestaties, Style:=GlobalValues.NumberFormat))
                         .Cells(4).Range.InsertAfter(Format(Expression:=wages, Style:=GlobalValues.NumberFormat))
-                        .Cells(5).Range.InsertAfter(Format(Expression:=wages * 0.21, Style:=GlobalValues.NumberFormat))
-                        .Cells(6).Range.InsertAfter(Format(Expression:=wages * 1.21, Style:=GlobalValues.NumberFormat))
+                        .Cells(5).Range.InsertAfter(Format(Expression:=wages * VAT, Style:=GlobalValues.NumberFormat))
+                        .Cells(6).Range.InsertAfter(Format(Expression:=wages * (1 + VAT), Style:=GlobalValues.NumberFormat))
                         .Range.ParagraphFormat.KeepWithNext = True
                         subtotal = subtotal + wages
                     End With
@@ -938,8 +948,8 @@ closeWord:
                                             ":" & Format(Expression:=wMinutes, Style:="00"))
                         .Cells(3).Range.InsertAfter(Format(Expression:=kostenSchema.wacht, Style:=GlobalValues.NumberFormat))
                         .Cells(4).Range.InsertAfter(Format(Expression:=wait, Style:=GlobalValues.NumberFormat))
-                        .Cells(5).Range.InsertAfter(Format(Expression:=wait * 0.21, Style:=GlobalValues.NumberFormat))
-                        .Cells(6).Range.InsertAfter(Format(Expression:=wait * 1.21, Style:=GlobalValues.NumberFormat))
+                        .Cells(5).Range.InsertAfter(Format(Expression:=wait * VAT, Style:=GlobalValues.NumberFormat))
+                        .Cells(6).Range.InsertAfter(Format(Expression:=wait * (1 + VAT), Style:=GlobalValues.NumberFormat))
                         .Range.ParagraphFormat.KeepWithNext = True
                     End With
                     subtotal = subtotal + wait
@@ -950,7 +960,7 @@ closeWord:
         End Select
 
         'Add subtotal
-        AddSubtotal(table:=table, Total:=subtotal * 1.21)
+        AddSubtotal(table:=table, Total:=subtotal * (1 + VAT))
         If subtotal <> 0 Then
             AddTitleRow(row:=titleRow, title:="Erelonen")
         End If
@@ -984,8 +994,8 @@ closeWord:
                 .Cells(2).Range.InsertAfter(Format(Expression:=factuurData.dactylo, Style:="#0"))
                 .Cells(3).Range.InsertAfter(Format(Expression:=kostenSchema.dactylo, Style:=GlobalValues.NumberFormat))
                 .Cells(4).Range.InsertAfter(Format(Expression:=dactylo, Style:=GlobalValues.NumberFormat))
-                .Cells(5).Range.InsertAfter(Format(Expression:=dactylo * 0.21, Style:=GlobalValues.NumberFormat))
-                .Cells(6).Range.InsertAfter(Format(Expression:=dactylo * 1.21, Style:=GlobalValues.NumberFormat))
+                .Cells(5).Range.InsertAfter(Format(Expression:=dactylo * VAT, Style:=GlobalValues.NumberFormat))
+                .Cells(6).Range.InsertAfter(Format(Expression:=dactylo * (1 + VAT), Style:=GlobalValues.NumberFormat))
                 .Range.ParagraphFormat.KeepWithNext = True
                 subtotal = subtotal + dactylo
             End With
@@ -1001,8 +1011,8 @@ closeWord:
                 .Cells(2).Range.InsertAfter(Format(Expression:=factuurData.fotokopies, Style:="#0"))
                 .Cells(3).Range.InsertAfter(Format(Expression:=kostenSchema.fotokopie, Style:=GlobalValues.NumberFormat))
                 .Cells(4).Range.InsertAfter(Format(Expression:=fotokopies, Style:=GlobalValues.NumberFormat))
-                .Cells(5).Range.InsertAfter(Format(Expression:=fotokopies * 0.21, Style:=GlobalValues.NumberFormat))
-                .Cells(6).Range.InsertAfter(Format(Expression:=fotokopies * 1.21, Style:=GlobalValues.NumberFormat))
+                .Cells(5).Range.InsertAfter(Format(Expression:=fotokopies * VAT, Style:=GlobalValues.NumberFormat))
+                .Cells(6).Range.InsertAfter(Format(Expression:=fotokopies * (1 + VAT), Style:=GlobalValues.NumberFormat))
                 .Range.ParagraphFormat.KeepWithNext = True
                 subtotal = subtotal + fotokopies
             End With
@@ -1018,8 +1028,8 @@ closeWord:
                 .Cells(2).Range.InsertAfter(Format(Expression:=factuurData.fax, Style:="#0"))
                 .Cells(3).Range.InsertAfter(Format(Expression:=kostenSchema.mail, Style:=GlobalValues.NumberFormat))
                 .Cells(4).Range.InsertAfter(Format(Expression:=fax, Style:=GlobalValues.NumberFormat))
-                .Cells(5).Range.InsertAfter(Format(Expression:=fax * 0.21, Style:=GlobalValues.NumberFormat))
-                .Cells(6).Range.InsertAfter(Format(Expression:=fax * 1.21, Style:=GlobalValues.NumberFormat))
+                .Cells(5).Range.InsertAfter(Format(Expression:=fax * VAT, Style:=GlobalValues.NumberFormat))
+                .Cells(6).Range.InsertAfter(Format(Expression:=fax * (1 + VAT), Style:=GlobalValues.NumberFormat))
                 .Range.ParagraphFormat.KeepWithNext = True
                 subtotal = subtotal + fax
             End With
@@ -1035,8 +1045,8 @@ closeWord:
                 .Cells(2).Range.InsertAfter(Format(Expression:=factuurData.verplaatsing, Style:="#0"))
                 .Cells(3).Range.InsertAfter(Format(Expression:=kostenSchema.verplaatsing, Style:=GlobalValues.NumberFormat))
                 .Cells(4).Range.InsertAfter(Format(Expression:=verplaatsing, Style:=GlobalValues.NumberFormat))
-                .Cells(5).Range.InsertAfter(Format(Expression:=verplaatsing * 0.21, Style:=GlobalValues.NumberFormat))
-                .Cells(6).Range.InsertAfter(Format(Expression:=verplaatsing * 1.21, Style:=GlobalValues.NumberFormat))
+                .Cells(5).Range.InsertAfter(Format(Expression:=verplaatsing * VAT, Style:=GlobalValues.NumberFormat))
+                .Cells(6).Range.InsertAfter(Format(Expression:=verplaatsing * (1 + VAT), Style:=GlobalValues.NumberFormat))
                 .Range.ParagraphFormat.KeepWithNext = True
                 subtotal = subtotal + verplaatsing
             End With
@@ -1048,8 +1058,8 @@ closeWord:
                 .Borders(WdBorderType.wdBorderTop).Visible = False
                 .Cells(1).Range.InsertAfter("- andere kostenen:")
                 .Cells(4).Range.InsertAfter(Format(Expression:=factuurData.bijkomende_kosten, Style:=GlobalValues.NumberFormat))
-                .Cells(5).Range.InsertAfter(Format(Expression:=factuurData.bijkomende_kosten * 0.21, Style:=GlobalValues.NumberFormat))
-                .Cells(6).Range.InsertAfter(Format(Expression:=factuurData.bijkomende_kosten * 1.21, Style:=GlobalValues.NumberFormat))
+                .Cells(5).Range.InsertAfter(Format(Expression:=factuurData.bijkomende_kosten * VAT, Style:=GlobalValues.NumberFormat))
+                .Cells(6).Range.InsertAfter(Format(Expression:=factuurData.bijkomende_kosten * (1 + VAT), Style:=GlobalValues.NumberFormat))
                 .Range.ParagraphFormat.KeepWithNext = True
                 subtotal = subtotal + factuurData.bijkomende_kosten
             End With
@@ -1061,8 +1071,8 @@ closeWord:
                 .Borders(WdBorderType.wdBorderTop).Visible = False
                 .Cells(1).Range.InsertAfter("- opstarten dossier:")
                 .Cells(4).Range.InsertAfter(Format(Expression:=factuurData.forfait, Style:=GlobalValues.NumberFormat))
-                .Cells(5).Range.InsertAfter(Format(Expression:=factuurData.forfait * 0.21, Style:=GlobalValues.NumberFormat))
-                .Cells(6).Range.InsertAfter(Format(Expression:=factuurData.forfait * 1.21, Style:=GlobalValues.NumberFormat))
+                .Cells(5).Range.InsertAfter(Format(Expression:=factuurData.forfait * VAT, Style:=GlobalValues.NumberFormat))
+                .Cells(6).Range.InsertAfter(Format(Expression:=factuurData.forfait * (1 + VAT), Style:=GlobalValues.NumberFormat))
                 .Range.ParagraphFormat.KeepWithNext = True
                 subtotal = subtotal + factuurData.forfait
             End With
@@ -1070,7 +1080,7 @@ closeWord:
 
 
         'Add subtotal
-        AddSubtotal(table:=table, Total:=subtotal * 1.21)
+        AddSubtotal(table:=table, Total:=subtotal * (1 + VAT))
         If subtotal <> 0 Then
             AddTitleRow(row:=titleRow, title:="Bureelkosten:")
         End If
@@ -1096,7 +1106,7 @@ closeWord:
         tbl.AutoFilter.ApplyFilter()
         Prov_Erelonen = tbl.TotalsRowRange.Cells(1, tbl.ListColumns("Ereloon_betaald").Index)
         Prov_Gerecht = tbl.TotalsRowRange.Cells(1, tbl.ListColumns("gerechtskosten_betaald").Index)
-        Prov_BTW = Prov_Erelonen * 0.21
+        Prov_BTW = Prov_Erelonen * VAT
         REM remove the autofilter is necessairy
         tbl.AutoFilter.ShowAllData()
 
@@ -1319,7 +1329,7 @@ Final:
             If provisie Then
                 .Cells(27) = ereloonFct
                 .Cells(28) = gerechtskostenFct
-                .Cells(29) = ereloonFct * 1.21 + gerechtskostenFct
+                .Cells(29) = ereloonFct * (1 + VAT) + gerechtskostenFct
             Else
                 For i = 9 To 26
                     .Cells(i) = ogm_Record.Cells(i).Value
@@ -1393,6 +1403,5 @@ Final:
         ' GC.SuppressFinalize(Me)
     End Sub
 #End Region
-
 
 End Class

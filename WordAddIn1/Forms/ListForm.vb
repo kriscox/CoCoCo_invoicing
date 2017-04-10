@@ -3,6 +3,7 @@ Imports System.Drawing
 Imports System.Windows.Forms
 
 Public Class ListForm
+    Property Selection As Boolean
 
     Private Sub Print_Button_Click()
         Dim prn As New Printing.PrintDocument
@@ -55,6 +56,14 @@ Public Class ListForm
             listviewcount += 1
         Next
 
+    End Sub
+
+    Private Sub OK_Click(sender As Object, e As EventArgs) Handles OK.Click
+        If (Selection And ListView1.SelectedItems.Count <> 1) Then
+            MsgBox(Prompt:="Je moet 1 item selecteren en slechts 1", Buttons:=MsgBoxStyle.Critical, Title:="Fout")
+        Else
+            Me.Hide()
+        End If
     End Sub
 End Class
 

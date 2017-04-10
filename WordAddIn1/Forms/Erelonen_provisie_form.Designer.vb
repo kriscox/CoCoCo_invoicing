@@ -38,6 +38,7 @@ Partial Class Erelonen_provisie_form
         Me.Label9 = New System.Windows.Forms.Label()
         Me.Label10 = New System.Windows.Forms.Label()
         Me.Totaal_ex_btw = New System.Windows.Forms.Label()
+        Me.IC = New System.Windows.Forms.CheckBox()
         Me.SuspendLayout()
         '
         'Label1
@@ -216,11 +217,23 @@ Partial Class Erelonen_provisie_form
         Me.Totaal_ex_btw.Text = "€ 0,00"
         Me.Totaal_ex_btw.TextAlign = System.Drawing.ContentAlignment.MiddleRight
         '
+        'IC
+        '
+        Me.IC.AutoSize = True
+        Me.IC.Font = New System.Drawing.Font("Trebuchet MS", 12.0!)
+        Me.IC.Location = New System.Drawing.Point(429, 32)
+        Me.IC.Name = "IC"
+        Me.IC.Size = New System.Drawing.Size(43, 26)
+        Me.IC.TabIndex = 5
+        Me.IC.Text = "IC"
+        Me.IC.UseVisualStyleBackColor = True
+        '
         'Erelonen_provisie_form
         '
         Me.AutoScaleDimensions = New System.Drawing.SizeF(6.0!, 13.0!)
         Me.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font
         Me.ClientSize = New System.Drawing.Size(673, 185)
+        Me.Controls.Add(Me.IC)
         Me.Controls.Add(Me.Button_Cancel)
         Me.Controls.Add(Me.Button_OK)
         Me.Controls.Add(Me.Label5)
@@ -265,4 +278,5 @@ Partial Class Erelonen_provisie_form
     Friend WithEvents Label9 As Windows.Forms.Label
     Friend WithEvents Label10 As Windows.Forms.Label
     Friend WithEvents Totaal_ex_btw As Windows.Forms.Label
+    Friend WithEvents IC As Windows.Forms.CheckBox
 End Class

@@ -22,7 +22,6 @@ Partial Class InputInvoice_Form
     'Do not modify it using the code editor.
     <System.Diagnostics.DebuggerStepThrough()> _
     Private Sub InitializeComponent()
-        Me.TabControl1 = New System.Windows.Forms.TabControl()
         Me.OGMinput = New System.Windows.Forms.TabPage()
         Me.OGM_exit = New System.Windows.Forms.Button()
         Me.OGM_ok = New System.Windows.Forms.Button()
@@ -33,24 +32,19 @@ Partial Class InputInvoice_Form
         Me.Label4 = New System.Windows.Forms.Label()
         Me.Label3 = New System.Windows.Forms.Label()
         Me.Label1 = New System.Windows.Forms.Label()
-        Me.ShowExcel = New System.Windows.Forms.TabPage()
-        Me.TabControl1.SuspendLayout()
+        Me.TabControl1 = New System.Windows.Forms.TabControl()
+        Me.Dossiernr = New System.Windows.Forms.TabPage()
+        Me.Dossier_exit = New System.Windows.Forms.Button()
+        Me.Dossier_ok = New System.Windows.Forms.Button()
+        Me.Label6 = New System.Windows.Forms.Label()
+        Me.Label5 = New System.Windows.Forms.Label()
+        Me.Dossier_nr2 = New System.Windows.Forms.TextBox()
+        Me.Dossier_nr = New System.Windows.Forms.TextBox()
+        Me.Dossier_year = New System.Windows.Forms.TextBox()
         Me.OGMinput.SuspendLayout()
+        Me.TabControl1.SuspendLayout()
+        Me.Dossiernr.SuspendLayout()
         Me.SuspendLayout()
-        '
-        'TabControl1
-        '
-        Me.TabControl1.Anchor = CType((((System.Windows.Forms.AnchorStyles.Top Or System.Windows.Forms.AnchorStyles.Bottom) _
-            Or System.Windows.Forms.AnchorStyles.Left) _
-            Or System.Windows.Forms.AnchorStyles.Right), System.Windows.Forms.AnchorStyles)
-        Me.TabControl1.Controls.Add(Me.OGMinput)
-        Me.TabControl1.Controls.Add(Me.ShowExcel)
-        Me.TabControl1.Location = New System.Drawing.Point(12, 12)
-        Me.TabControl1.Name = "TabControl1"
-        Me.TabControl1.SelectedIndex = 0
-        Me.TabControl1.Size = New System.Drawing.Size(395, 156)
-        Me.TabControl1.SizeMode = System.Windows.Forms.TabSizeMode.Fixed
-        Me.TabControl1.TabIndex = 0
         '
         'OGMinput
         '
@@ -162,15 +156,107 @@ Partial Class InputInvoice_Form
         Me.Label1.TabIndex = 0
         Me.Label1.Text = "++"
         '
-        'ShowExcel
+        'TabControl1
         '
-        Me.ShowExcel.BackColor = System.Drawing.SystemColors.Control
-        Me.ShowExcel.Location = New System.Drawing.Point(4, 22)
-        Me.ShowExcel.Name = "ShowExcel"
-        Me.ShowExcel.Padding = New System.Windows.Forms.Padding(3)
-        Me.ShowExcel.Size = New System.Drawing.Size(387, 130)
-        Me.ShowExcel.TabIndex = 1
-        Me.ShowExcel.Text = "Excel"
+        Me.TabControl1.Anchor = CType((((System.Windows.Forms.AnchorStyles.Top Or System.Windows.Forms.AnchorStyles.Bottom) _
+            Or System.Windows.Forms.AnchorStyles.Left) _
+            Or System.Windows.Forms.AnchorStyles.Right), System.Windows.Forms.AnchorStyles)
+        Me.TabControl1.Controls.Add(Me.OGMinput)
+        Me.TabControl1.Controls.Add(Me.Dossiernr)
+        Me.TabControl1.Location = New System.Drawing.Point(12, 12)
+        Me.TabControl1.Name = "TabControl1"
+        Me.TabControl1.SelectedIndex = 0
+        Me.TabControl1.Size = New System.Drawing.Size(395, 156)
+        Me.TabControl1.SizeMode = System.Windows.Forms.TabSizeMode.Fixed
+        Me.TabControl1.TabIndex = 0
+        '
+        'Dossiernr
+        '
+        Me.Dossiernr.BackColor = System.Drawing.SystemColors.Control
+        Me.Dossiernr.Controls.Add(Me.Dossier_exit)
+        Me.Dossiernr.Controls.Add(Me.Dossier_ok)
+        Me.Dossiernr.Controls.Add(Me.Label6)
+        Me.Dossiernr.Controls.Add(Me.Label5)
+        Me.Dossiernr.Controls.Add(Me.Dossier_nr2)
+        Me.Dossiernr.Controls.Add(Me.Dossier_nr)
+        Me.Dossiernr.Controls.Add(Me.Dossier_year)
+        Me.Dossiernr.Location = New System.Drawing.Point(4, 22)
+        Me.Dossiernr.Name = "Dossiernr"
+        Me.Dossiernr.Padding = New System.Windows.Forms.Padding(3)
+        Me.Dossiernr.Size = New System.Drawing.Size(387, 130)
+        Me.Dossiernr.TabIndex = 1
+        Me.Dossiernr.Text = "Dossiernr"
+        '
+        'Dossier_exit
+        '
+        Me.Dossier_exit.Location = New System.Drawing.Point(264, 82)
+        Me.Dossier_exit.Name = "Dossier_exit"
+        Me.Dossier_exit.Size = New System.Drawing.Size(82, 23)
+        Me.Dossier_exit.TabIndex = 7
+        Me.Dossier_exit.Text = "EXIT"
+        Me.Dossier_exit.UseVisualStyleBackColor = True
+        '
+        'Dossier_ok
+        '
+        Me.Dossier_ok.Location = New System.Drawing.Point(151, 82)
+        Me.Dossier_ok.Name = "Dossier_ok"
+        Me.Dossier_ok.Size = New System.Drawing.Size(82, 23)
+        Me.Dossier_ok.TabIndex = 6
+        Me.Dossier_ok.Text = "OK"
+        Me.Dossier_ok.UseVisualStyleBackColor = True
+        '
+        'Label6
+        '
+        Me.Label6.AutoSize = True
+        Me.Label6.Font = New System.Drawing.Font("Trebuchet MS", 12.0!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
+        Me.Label6.Location = New System.Drawing.Point(213, 30)
+        Me.Label6.Name = "Label6"
+        Me.Label6.Size = New System.Drawing.Size(16, 22)
+        Me.Label6.TabIndex = 3
+        Me.Label6.Text = "-"
+        '
+        'Label5
+        '
+        Me.Label5.AutoSize = True
+        Me.Label5.Font = New System.Drawing.Font("Trebuchet MS", 12.0!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
+        Me.Label5.Location = New System.Drawing.Point(128, 30)
+        Me.Label5.Name = "Label5"
+        Me.Label5.Size = New System.Drawing.Size(18, 22)
+        Me.Label5.TabIndex = 3
+        Me.Label5.Text = "/"
+        '
+        'Dossier_nr2
+        '
+        Me.Dossier_nr2.Anchor = CType((((System.Windows.Forms.AnchorStyles.Top Or System.Windows.Forms.AnchorStyles.Bottom) _
+            Or System.Windows.Forms.AnchorStyles.Left) _
+            Or System.Windows.Forms.AnchorStyles.Right), System.Windows.Forms.AnchorStyles)
+        Me.Dossier_nr2.Location = New System.Drawing.Point(235, 31)
+        Me.Dossier_nr2.MaxLength = 1
+        Me.Dossier_nr2.Name = "Dossier_nr2"
+        Me.Dossier_nr2.Size = New System.Drawing.Size(17, 20)
+        Me.Dossier_nr2.TabIndex = 3
+        '
+        'Dossier_nr
+        '
+        Me.Dossier_nr.Anchor = CType((((System.Windows.Forms.AnchorStyles.Top Or System.Windows.Forms.AnchorStyles.Bottom) _
+            Or System.Windows.Forms.AnchorStyles.Left) _
+            Or System.Windows.Forms.AnchorStyles.Right), System.Windows.Forms.AnchorStyles)
+        Me.Dossier_nr.Location = New System.Drawing.Point(152, 31)
+        Me.Dossier_nr.MaxLength = 4
+        Me.Dossier_nr.Name = "Dossier_nr"
+        Me.Dossier_nr.Size = New System.Drawing.Size(55, 20)
+        Me.Dossier_nr.TabIndex = 2
+        '
+        'Dossier_year
+        '
+        Me.Dossier_year.Anchor = CType((((System.Windows.Forms.AnchorStyles.Top Or System.Windows.Forms.AnchorStyles.Bottom) _
+            Or System.Windows.Forms.AnchorStyles.Left) _
+            Or System.Windows.Forms.AnchorStyles.Right), System.Windows.Forms.AnchorStyles)
+        Me.Dossier_year.Location = New System.Drawing.Point(67, 31)
+        Me.Dossier_year.MaxLength = 4
+        Me.Dossier_year.Name = "Dossier_year"
+        Me.Dossier_year.Size = New System.Drawing.Size(55, 20)
+        Me.Dossier_year.TabIndex = 1
         '
         'InputInvoice_Form
         '
@@ -180,14 +266,15 @@ Partial Class InputInvoice_Form
         Me.Controls.Add(Me.TabControl1)
         Me.Name = "InputInvoice_Form"
         Me.Text = "Input betalingen"
-        Me.TabControl1.ResumeLayout(False)
         Me.OGMinput.ResumeLayout(False)
         Me.OGMinput.PerformLayout()
+        Me.TabControl1.ResumeLayout(False)
+        Me.Dossiernr.ResumeLayout(False)
+        Me.Dossiernr.PerformLayout()
         Me.ResumeLayout(False)
 
     End Sub
 
-    Friend WithEvents TabControl1 As Windows.Forms.TabControl
     Friend WithEvents OGMinput As Windows.Forms.TabPage
     Friend WithEvents OGM_exit As Windows.Forms.Button
     Friend WithEvents OGM_ok As Windows.Forms.Button
@@ -198,5 +285,13 @@ Partial Class InputInvoice_Form
     Friend WithEvents Label4 As Windows.Forms.Label
     Friend WithEvents Label3 As Windows.Forms.Label
     Friend WithEvents Label1 As Windows.Forms.Label
-    Friend WithEvents ShowExcel As Windows.Forms.TabPage
+    Friend WithEvents TabControl1 As Windows.Forms.TabControl
+    Friend WithEvents Dossiernr As Windows.Forms.TabPage
+    Friend WithEvents Dossier_exit As Windows.Forms.Button
+    Friend WithEvents Dossier_ok As Windows.Forms.Button
+    Friend WithEvents Label6 As Windows.Forms.Label
+    Friend WithEvents Label5 As Windows.Forms.Label
+    Friend WithEvents Dossier_nr2 As Windows.Forms.TextBox
+    Friend WithEvents Dossier_nr As Windows.Forms.TextBox
+    Friend WithEvents Dossier_year As Windows.Forms.TextBox
 End Class

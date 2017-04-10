@@ -216,54 +216,64 @@
   -->
   <ItemGroup>
     <AppDesigner Include="My Project\" />
-    <Compile Include="Erelonen.vb" />
-    <Compile Include="Erelonen_provisie_form.Designer.vb">
+    <Compile Include="Forms\Derden_Gelden_Form.Designer.vb">
+      <DependentUpon>Derden_Gelden_Form.vb</DependentUpon>
+    </Compile>
+    <Compile Include="Forms\Derden_Gelden_Form.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="VB\Erelonen.vb" />
+    <Compile Include="Forms\Erelonen_provisie_form.Designer.vb">
       <DependentUpon>Erelonen_provisie_form.vb</DependentUpon>
     </Compile>
-    <Compile Include="Erelonen_provisie_form.vb">
+    <Compile Include="Forms\Erelonen_provisie_form.vb">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="Ereloon_Nota_form.Designer.vb">
+    <Compile Include="Forms\Ereloon_Nota_form.Designer.vb">
       <DependentUpon>Ereloon_Nota_form.vb</DependentUpon>
     </Compile>
-    <Compile Include="Ereloon_Nota_form.vb">
+    <Compile Include="Forms\Ereloon_Nota_form.vb">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="GlobalValues.vb" />
-    <Compile Include="InputInvoice_Form.Designer.vb">
+    <Compile Include="VB\GlobalValues.vb" />
+    <Compile Include="Forms\InputInvoice_Form.Designer.vb">
       <DependentUpon>InputInvoice_Form.vb</DependentUpon>
     </Compile>
-    <Compile Include="InputInvoice_Form.vb">
+    <Compile Include="Forms\InputInvoice_Form.vb">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="InvoiceData.vb" />
-    <Compile Include="Invoicing.vb" />
-    <Compile Include="Invoicing_ribbon.vb" />
-    <Compile Include="Kostenschema.vb" />
-    <Compile Include="ListForm.Designer.vb">
+    <Compile Include="VB\InvoiceData.vb" />
+    <Compile Include="VB\Invoicing.vb" />
+    <Compile Include="VB\Invoicing_ribbon.vb" />
+    <Compile Include="VB\Kostenschema.vb" />
+    <Compile Include="Forms\ListForm.Designer.vb">
       <DependentUpon>ListForm.vb</DependentUpon>
     </Compile>
-    <Compile Include="ListForm.vb">
+    <Compile Include="Forms\ListForm.vb">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="Payment.Designer.vb">
+    <Compile Include="Forms\Payment.Designer.vb">
       <DependentUpon>Payment.vb</DependentUpon>
     </Compile>
-    <Compile Include="Payment.vb">
+    <Compile Include="Forms\Payment.vb">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="PaymentOverview.vb" />
-    <Compile Include="Provision.vb" />
+    <Compile Include="VB\PaymentOverview.vb" />
+    <Compile Include="VB\Provision.vb" />
     <Compile Include="CoCoCo_invoicing_addin.vb">
       <SubType>Code</SubType>
     </Compile>
-    <EmbeddedResource Include="Erelonen_provisie_form.resx">
+    <Compile Include="VB\DerdenGelden.vb" />
+    <EmbeddedResource Include="Forms\Derden_Gelden_Form.resx">
+      <DependentUpon>Derden_Gelden_Form.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Forms\Erelonen_provisie_form.resx">
       <DependentUpon>Erelonen_provisie_form.vb</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Ereloon_Nota_form.resx">
+    <EmbeddedResource Include="Forms\Ereloon_Nota_form.resx">
       <DependentUpon>Ereloon_Nota_form.vb</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Payment.resx">
+    <EmbeddedResource Include="Forms\Payment.resx">
       <DependentUpon>Payment.vb</DependentUpon>
     </EmbeddedResource>
     <None Include="ClassDiagram1.cd" />
@@ -274,10 +284,10 @@
       <DependentUpon>CoCoCo_invoicing_addin.Designer.xml</DependentUpon>
     </Compile>
     <Compile Include="My Project\AssemblyInfo.vb" />
-    <EmbeddedResource Include="InputInvoice_Form.resx">
+    <EmbeddedResource Include="Forms\InputInvoice_Form.resx">
       <DependentUpon>InputInvoice_Form.vb</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="ListForm.resx">
+    <EmbeddedResource Include="Forms\ListForm.resx">
       <DependentUpon>ListForm.vb</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="My Project\Resources.resx">

@@ -35,7 +35,7 @@ Public Class Payment
         Me.Hide()
     End Sub
 
-    Private Sub payment_ok_Click(sender As Object, e As EventArgs) Handles Payment_ok.Click
+    Private Sub Payment_ok_Click(sender As Object, e As EventArgs) Handles Payment_ok.Click
         Dim Amount As String
         On Error GoTo ErrorHandler
 

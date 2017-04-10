@@ -5,7 +5,7 @@ Imports System.Windows.Forms
 
 Public Class PaymentOverview
     Implements IDisposable
-
+#Region "Variables"
     REM version 20160830
     Dim ObjExcel As Excel.Application = GlobalValues.GetExcel()
     Dim ExWb As Excel.Workbook = GlobalValues.GetWorkbook()
@@ -14,6 +14,7 @@ Public Class PaymentOverview
     Dim Input_Form As New ListForm
     Dim ListInvoices As Excel.Range
     Private Const ColumnCount = 7
+#End Region
 
     Private Sub QuickSort(vArray As Object, inLow As Long, inHi As Long)
 
@@ -75,7 +76,7 @@ Public Class PaymentOverview
 
     End Sub
 
-    Private Function Get_Unpayed_Invoices() As Boolean
+    Private Function Get_Unpayed_Invoices(ByVal dossiernr As String) As Boolean
 
         Dim sht As Excel.Worksheet
         Dim tbl As Excel.ListObject
@@ -95,6 +96,9 @@ Public Class PaymentOverview
         REM remove the autofilter is necessairy
         tbl.AutoFilter.ShowAllData()
         tbl.Range.AutoFilter(Field:=32, Criteria1:="<>True")
+        If (dossiernr IsNot Nothing) Then
+            tbl.Range.AutoFilter(Field:=3, Criteria1:=dossiernr)
+        End If
         tbl.AutoFilter.ApplyFilter()
 
         ListInvoices = tbl.DataBodyRange.SpecialCells(XlCellType.xlCellTypeVisible)
@@ -118,6 +122,9 @@ Public Class PaymentOverview
         REM remove the autofilter is necessairy
         tbl.AutoFilter.ShowAllData()
         tbl.Range.AutoFilter(Field:=13, Criteria1:="<>True")
+        If (dossiernr IsNot Nothing) Then
+            tbl.Range.AutoFilter(Field:=3, Criteria1:=dossiernr)
+        End If
         tbl.AutoFilter.ApplyFilter()
 
         ListInvoices = tbl.DataBodyRange.SpecialCells(XlCellType.xlCellTypeVisible)
@@ -174,8 +181,7 @@ ErrorHandler:
 
     End Function
 
-
-    Private Function Show_ListForm() As Boolean
+    Private Function Show_ListForm(ByVal sel As Boolean) As Boolean
 
         Dim ColumnHeader As ListView.ColumnHeaderCollection
         Dim ListItems As ListView.ListViewItemCollection
@@ -226,14 +232,13 @@ ErrorHandler:
         Input_Form.Hide()
     End Function
 
-
-    Public Function main() As Boolean
+    Public Function main(Optional ByVal dossiernr As String = Nothing) As Boolean
         Dim error_text As String
 
-        If Not Get_Unpayed_Invoices() Then
+        If Not Get_Unpayed_Invoices(dossiernr) Then
             error_text = "Error getting invoices"
             GoTo Exit_error
-        ElseIf Not Show_ListForm() Then
+        ElseIf Not Show_ListForm(dossiernr = Nothing) Then
             error_text = "Error showing Form"
             GoTo Exit_error
         End If
@@ -245,6 +250,10 @@ Exit_error:
         MsgBox(error_text)
         main = False
 
+    End Function
+
+    Public Function GetChoise() As Integer
+        Return Input_Form.ListView1.SelectedIndices(0)
     End Function
 
 #Region "IDisposable Support"
@@ -277,5 +286,6 @@ Exit_error:
         ' TODO: uncomment the following line if Finalize() is overridden above.
         ' GC.SuppressFinalize(Me)
     End Sub
+
 #End Region
 End Class

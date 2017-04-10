@@ -24,6 +24,7 @@ Partial Class ListForm
     Private Sub InitializeComponent()
         Me.ListView1 = New System.Windows.Forms.ListView()
         Me.Print_Button = New System.Windows.Forms.Button()
+        Me.OK = New System.Windows.Forms.Button()
         Me.SuspendLayout()
         '
         'ListView1
@@ -49,11 +50,21 @@ Partial Class ListForm
         Me.Print_Button.Text = "Print"
         Me.Print_Button.UseVisualStyleBackColor = True
         '
+        'OK
+        '
+        Me.OK.Location = New System.Drawing.Point(342, 324)
+        Me.OK.Name = "OK"
+        Me.OK.Size = New System.Drawing.Size(94, 35)
+        Me.OK.TabIndex = 2
+        Me.OK.Text = "OK"
+        Me.OK.UseVisualStyleBackColor = True
+        '
         'ListForm
         '
         Me.AutoScaleDimensions = New System.Drawing.SizeF(6.0!, 13.0!)
         Me.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font
         Me.ClientSize = New System.Drawing.Size(555, 371)
+        Me.Controls.Add(Me.OK)
         Me.Controls.Add(Me.Print_Button)
         Me.Controls.Add(Me.ListView1)
         Me.Name = "ListForm"
@@ -64,4 +75,5 @@ Partial Class ListForm
 
     Friend WithEvents ListView1 As Windows.Forms.ListView
     Friend WithEvents Print_Button As Windows.Forms.Button
+    Friend WithEvents OK As Windows.Forms.Button
 End Class

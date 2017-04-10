@@ -3,6 +3,8 @@ Imports Microsoft.Office.Interop.Excel
 Imports Microsoft.Office.Interop
 
 Public Class Erelonen
+#Region "Variables"
+
     REM versie van 20160702
 
     Private Structure str_Erelonen_bureelkosten
@@ -37,6 +39,8 @@ Public Class Erelonen
     Dim ExWb As Workbook = GlobalValues.GetWorkbook()
     Dim gerechtskosten As str_gerechtskosten
     Dim Erelonen_bureelkosten As str_Erelonen_bureelkosten
+    Dim btw_percentage As Double
+#End Region
 
     Private Function readFile() As Boolean
         Dim FileName As String
