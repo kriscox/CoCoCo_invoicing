@@ -1,4 +1,5 @@
 ﻿Imports Microsoft.Office.Interop.Excel
+
 Public Class GlobalValues
     Implements IDisposable
 
@@ -133,7 +134,7 @@ ErrorHandler:
 
         If True = ExcelWB.ReadOnly Then
             ExcelWB.Close()
-            Throw New IO.FileLoadException()
+            Throw New Data.ReadOnlyException("!!The excel database is read-only!!")
         End If
     End Sub
 

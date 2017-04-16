@@ -13,7 +13,7 @@ Public Class DerdenGelden
     Private OGMCode As String
 #End Region
 
-    Private Function readFile() As Boolean
+    Private Function ReadFile() As Boolean
         Dim FileName As String
         Dim Result As Boolean
         Dim Line As String = Nothing
@@ -40,11 +40,11 @@ Public Class DerdenGelden
 End_Routine:
         FileClose(1)
 
-        readFile = Result
+        ReadFile = Result
 
     End Function
 
-    Private Function requestAmounts() As Boolean
+    Private Function RequestAmounts() As Boolean
 
         'run Input_Form
         Dim Input_Form As New Derden_Gelden_Form
@@ -56,9 +56,9 @@ End_Routine:
 
         If (Input_Form.Tag <> "Cancelled") Then
             Totaal = CDbl(Input_Form.Payment_amount.Text)
-            requestAmounts = True
+            RequestAmounts = True
         Else
-            requestAmounts = False
+            RequestAmounts = False
         End If
         Input_Form.Hide()
         GoTo end_of_function
@@ -66,7 +66,7 @@ End_Routine:
         On Error Resume Next
         Input_Form.Hide()
         Input_Form.Close()
-        requestAmounts = False
+        RequestAmounts = False
 
 end_of_function:
     End Function
@@ -133,17 +133,17 @@ ErrorHandler:
 
     End Sub
 
-    Public Function main() As Boolean
+    Public Function Main() As Boolean
         Dim success As Boolean
         Dim error_text As String = ""
         Dim Write_On_Save As Boolean
 
         success = True
         Write_On_Save = True
-        If Not readFile() Then
+        If Not ReadFile() Then
             error_text = "CSV file not read"
             GoTo Exit_error
-        ElseIf Not requestAmounts() Then
+        ElseIf Not RequestAmounts() Then
             error_text = "Error in Form"
             GoTo Exit_error
         ElseIf Not InsertInExcel() Then
@@ -158,12 +158,12 @@ ErrorHandler:
             GoTo Exit_error
         End If
 
-        main = success
+        Main = success
         Exit Function
 
 Exit_error:
         MsgBox(error_text)
-        main = success
+        Main = success
 
     End Function
 End Class

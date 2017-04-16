@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 14
-VisualStudioVersion = 14.0.25420.1
+# Visual Studio 15
+VisualStudioVersion = 15.0.26403.3
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{F184B08F-C81C-45F6-A57F-5ABD9991F28F}") = "CoCoCo_invoicing", "WordAddIn1\CoCoCo_invoicing.vbproj", "{A1D13C7B-B87D-4A9B-82B5-E7536F815BEE}"
 EndProject
@@ -15,6 +15,7 @@ Global
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
 		{A1D13C7B-B87D-4A9B-82B5-E7536F815BEE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{A1D13C7B-B87D-4A9B-82B5-E7536F815BEE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A1D13C7B-B87D-4A9B-82B5-E7536F815BEE}.Debug|Any CPU.Deploy.0 = Debug|Any CPU
 		{A1D13C7B-B87D-4A9B-82B5-E7536F815BEE}.Debug|x64.ActiveCfg = Debug|Any CPU
 		{A1D13C7B-B87D-4A9B-82B5-E7536F815BEE}.Debug|x64.Build.0 = Debug|Any CPU
 		{A1D13C7B-B87D-4A9B-82B5-E7536F815BEE}.Release|Any CPU.ActiveCfg = Release|Any CPU

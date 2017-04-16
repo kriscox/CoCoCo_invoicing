@@ -15,7 +15,10 @@
 
 'For more information, see the Ribbon XML documentation in the Visual Studio Tools for Office Help.
 
-<Runtime.InteropServices.ComVisible(True)>
+Imports System.Drawing
+Imports Microsoft.Office.Core
+
+'<Runtime.InteropServices.ComVisible(True)>
 Public Class Invoicing_ribbon
     Implements Office.IRibbonExtensibility
 
@@ -44,6 +47,11 @@ Public Class Invoicing_ribbon
         erelonen.main()
     End Sub
 
+    Public Sub DerdenGelden_button(ByVal control As Office.IRibbonControl)
+        Dim DerdenGelden As DerdenGelden = New DerdenGelden
+        DerdenGelden.Main()
+    End Sub
+
     Public Sub Overzicht_button(ByVal control As Office.IRibbonControl)
         Dim PaymentOverview As PaymentOverview = New PaymentOverview
         PaymentOverview.main()
@@ -66,6 +74,13 @@ Public Class Invoicing_ribbon
     End Sub
 
 #Region "Helpers"
+    Public Function GetItemIcon(ByVal imageName As String) As Icon
+        Select Case imageName
+            Case "Provisie"
+                Return My.Resources.provisie
+        End Select
+        Return Nothing
+    End Function
 
     Private Shared Function GetResourceText(ByVal resourceName As String) As String
         Dim asm As Reflection.Assembly = Reflection.Assembly.GetExecutingAssembly()

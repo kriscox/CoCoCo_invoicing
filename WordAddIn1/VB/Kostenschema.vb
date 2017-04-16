@@ -41,4 +41,5 @@ Public Class Kostenschema
         wacht = table.ListColumns("wacht").DataBodyRange(rownum).Value
         VAT = table.ListColumns("BTW").DataBodyRange(rownum).Value
     End Sub
+
 End Class
