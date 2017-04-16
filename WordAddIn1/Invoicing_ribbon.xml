@@ -1,20 +1,23 @@
 ﻿<?xml version="1.0" encoding="UTF-8"?>
-<customUI xmlns="http://schemas.microsoft.com/office/2009/07/customui" onLoad="Ribbon_Load">
+<customUI xmlns="http://schemas.microsoft.com/office/2009/07/customui" onLoad="Ribbon_Load" loadImage="GetItemIcon">
   <ribbon>
     <tabs>
-      <tab idMso="TabAddIns" label="Invoicing">
+      <tab idMso="TabAddIns" label="CoCoCo Invoicing">
         <group id="CoCoCo_invoicing"
                label="CoCoCo invoicing">
-          <button id="Provisie_nota" label="Provisie Nota" onAction="Provisie_nota_button"/>
-          <button id="Ëreloon_nota" label="Ereloon Nota" onAction="Ereloon_nota_button"/>
-          <button id="Overzicht" label="Betalings overzicht" onAction="Overzicht_button"/>
+          <button id="Provisie_nota" label="Provisie Nota" onAction="Provisie_nota_button" image="Provisie" size="large"/>
+          <button id="Ereloon_nota" label="Ereloon Nota" onAction="Ereloon_nota_button" image="Ereloon" size="large"/>
+          <button id="Derden_gelden_nota" label="Derden Gelden Nota" onAction="Derden_gelden_nota_button" image="Derdengelden" size="large"/>
+        </group>
+        <group id ="CoCoCo_Overzichten" label="Overzichten">
+          <button id="Overzicht" label="Betalings overzicht" onAction="Overzicht_button" image="Overzicht" size="large"/>
+        </group>
+        <group id="Invoicing_group" label="Invoicing">
+          <button id="Invoicing_button" label="Invoicing" onAction="Invoicing_Button" image="Factuur" size="large"/>
         </group>
         <group id="ShowForms" label="Show Forms">
           <button id="Provisie_nota_form" label="Provisie Nota" onAction="Show_Provision_Form_Button"/>
-          <button id="Ëreloon_nota_form" label="Ereloon Nota" onAction="Show_Erelonen_Form_Button"/>
-        </group>
-        <group id="Invoicing_group" label="Invoicing">
-          <button id="Invoicing_button" label="Invoicing" onAction="Invoicing_Button"/>
+          <button id="Ereloon_nota_form" label="Ereloon Nota" onAction="Show_Erelonen_Form_Button"/>
         </group>
       </tab>
     </tabs>

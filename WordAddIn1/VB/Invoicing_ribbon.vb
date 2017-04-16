@@ -56,6 +56,11 @@ Public Class Invoicing_ribbon
         Dim PaymentOverview As PaymentOverview = New PaymentOverview
         PaymentOverview.main()
     End Sub
+
+    Public Sub Derden_gelden_nota_button(ByVal control As Office.IRibbonControl)
+        Dim derdenGelden As DerdenGelden = New DerdenGelden
+        derdenGelden.main()
+    End Sub
 #End Region
 
     Public Sub Show_Provision_Form_Button(ByVal control As Office.IRibbonControl)
@@ -74,10 +79,18 @@ Public Class Invoicing_ribbon
     End Sub
 
 #Region "Helpers"
-    Public Function GetItemIcon(ByVal imageName As String) As Icon
+    Public Function GetItemIcon(ByVal imageName As String) As Bitmap
         Select Case imageName
             Case "Provisie"
-                Return My.Resources.provisie
+                Return My.Resources.provisie.ToBitmap()
+            Case "Overzicht"
+                Return My.Resources.overzicht.ToBitmap()
+            Case "Ereloon"
+                Return My.Resources.ereloon.ToBitmap()
+            Case "Derdengelden"
+                Return My.Resources.derdengelden.ToBitmap()
+            Case "Factuur"
+                Return My.Resources.factuur.ToBitmap()
         End Select
         Return Nothing
     End Function

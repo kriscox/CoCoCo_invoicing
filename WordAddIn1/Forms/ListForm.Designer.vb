@@ -52,6 +52,7 @@ Partial Class ListForm
         '
         'OK
         '
+        Me.OK.Anchor = CType((System.Windows.Forms.AnchorStyles.Bottom Or System.Windows.Forms.AnchorStyles.Right), System.Windows.Forms.AnchorStyles)
         Me.OK.Location = New System.Drawing.Point(342, 324)
         Me.OK.Name = "OK"
         Me.OK.Size = New System.Drawing.Size(94, 35)

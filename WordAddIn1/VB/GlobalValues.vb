@@ -9,10 +9,10 @@ Public Class GlobalValues
 
     'Global variables
     Public Shared ReadOnly password As String = "mviw!wwGUp!zaX7A"
-    Public Shared ReadOnly NumberFormat = "€ ## ##0.00;[RED]€ -## ##0.00;-"
-    Public Shared ReadOnly invoiceTemplate = "C:\Users\krisc\OneDrive\Documents\01. CoCoCo\ImagoInvest\Factuur.dotx"
-    Public Shared ReadOnly ExcelFileName = "C:\Users\krisc\OneDrive\Documents\01. CoCoCo\ImagoInvest\klantenboek.xlsx"
-    Public Shared ReadOnly InvoicePath = "C:\Users\krisc\OneDrive\Documents\01. CoCoCo\FA"
+    Public Shared ReadOnly NumberFormat = My.Settings.NumberFormat
+    Public Shared ReadOnly invoiceTemplate = My.Settings.invoiceTemplate
+    Public Shared ReadOnly ExcelFileName = My.Settings.ExcelFileName
+    Public Shared ReadOnly InvoicePath = My.Settings.InvoicePath
 
     Private Sub New()
         InitializeComponent()
@@ -133,7 +133,7 @@ ErrorHandler:
 
         If True = ExcelWB.ReadOnly Then
             ExcelWB.Close()
-            Throw New IO.FileLoadException()
+            Throw New IO.FileLoadException("Draait Excel nog in de achtergrond?")
         End If
     End Sub
 

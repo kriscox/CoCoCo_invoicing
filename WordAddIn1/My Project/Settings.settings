@@ -1,7 +1,18 @@
 ﻿<?xml version='1.0' encoding='utf-8'?>
-<SettingsFile xmlns="http://schemas.microsoft.com/VisualStudio/2004/01/settings" CurrentProfile="(Default)" UseMySettingsClassName="true">
-  <Profiles>
-    <Profile Name="(Default)" />
-  </Profiles>
-  <Settings />
+<SettingsFile xmlns="http://schemas.microsoft.com/VisualStudio/2004/01/settings" CurrentProfile="(Default)" GeneratedClassNamespace="" GeneratedClassName="MySettings" UseMySettingsClassName="true">
+  <Profiles />
+  <Settings>
+    <Setting Name="NumberFormat" Type="System.String" Scope="User">
+      <Value Profile="(Default)">€ ## ##0.00;[RED]€ -## ##0.00;-</Value>
+    </Setting>
+    <Setting Name="invoiceTemplate" Type="System.String" Scope="User">
+      <Value Profile="(Default)">C:\Users\krisc\OneDrive\Documents\01. CoCoCo\ImagoInvest\Factuur.dotx</Value>
+    </Setting>
+    <Setting Name="ExcelFileName" Type="System.String" Scope="User">
+      <Value Profile="(Default)">C:\Users\krisc\OneDrive\Documents\01. CoCoCo\ImagoInvest\klantenboek.xlsx</Value>
+    </Setting>
+    <Setting Name="InvoicePath" Type="System.String" Scope="User">
+      <Value Profile="(Default)">C:\Users\krisc\OneDrive\Documents\01. CoCoCo\FA</Value>
+    </Setting>
+  </Settings>
 </SettingsFile>

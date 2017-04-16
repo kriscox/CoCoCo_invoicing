@@ -276,6 +276,7 @@
     <EmbeddedResource Include="Forms\Payment.resx">
       <DependentUpon>Payment.vb</DependentUpon>
     </EmbeddedResource>
+    <None Include="app.config" />
     <None Include="ClassDiagram1.cd" />
     <None Include="CoCoCo_invoicing_addin.Designer.xml">
       <DependentUpon>CoCoCo_invoicing_addin.vb</DependentUpon>
@@ -316,12 +317,24 @@
     <Folder Include="My Project\DataSources\" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="Resources\Fases.jpg" />
-  </ItemGroup>
-  <ItemGroup>
     <EmbeddedResource Include="Invoicing_ribbon.xml">
       <SubType>Designer</SubType>
     </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\provisie.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\derdengelden.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\ereloon.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\overzicht.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\factuur.ico" />
   </ItemGroup>
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>
