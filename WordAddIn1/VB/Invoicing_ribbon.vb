@@ -18,7 +18,7 @@
 Imports System.Drawing
 Imports Microsoft.Office.Core
 
-'<Runtime.InteropServices.ComVisible(True)>
+<Runtime.InteropServices.ComVisible(True)>
 Public Class Invoicing_ribbon
     Implements Office.IRibbonExtensibility
 
