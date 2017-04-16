@@ -64,6 +64,10 @@ Fault:
         End If
     End Sub
 
+    Private Sub Button2_Click(sender As Object, e As EventArgs) Handles Button_Cancel.Click
+        Throw New NotImplementedException()
+    End Sub
+
     Private Sub IC_CheckedChanged(sender As Object, e As EventArgs) Handles IC.CheckedChanged
         On Error GoTo Fault
         If IC.Checked Then
